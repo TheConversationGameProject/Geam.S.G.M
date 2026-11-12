@@ -49,14 +49,18 @@ export default function HomePage() {
     if (mode !== "search" || locations.length) return;
     let alive = true;
     setLocationsBusy(true);
-    getSupabase().rpc("get_active_cafe_locations")
-      .then(({ data, error }) => {
+    (async () => {
+      try {
+        const { data, error } = await getSupabase().rpc("get_active_cafe_locations");
         if (!alive) return;
         if (error) setSearchNotice("دریافت فهرست شهرها انجام نشد. دوباره تلاش کن.");
         else setLocations((data ?? []) as CafeLocation[]);
-      })
-      .catch(() => { if (alive) setSearchNotice("اتصال به فهرست کافه‌ها برقرار نشد."); })
-      .finally(() => { if (alive) setLocationsBusy(false); });
+      } catch {
+        if (alive) setSearchNotice("اتصال به فهرست کافه‌ها برقرار نشد.");
+      } finally {
+        if (alive) setLocationsBusy(false);
+      }
+    })();
     return () => { alive = false; };
   }, [mode, locations.length]);
 
