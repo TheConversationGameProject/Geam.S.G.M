@@ -20,11 +20,17 @@ const emptyForm = {
   password: "", confirmPassword: "",
 };
 
+let supabaseInstance: ReturnType<typeof createClient> | null = null;
+
 function getSupabase() {
+  if (supabaseInstance) return supabaseInstance;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) throw new Error("اتصال سامانه هنوز پیکربندی نشده است.");
-  return createClient(url, key);
+  supabaseInstance = createClient(url, key, {
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+  });
+  return supabaseInstance;
 }
 
 export default function HomePage() {
