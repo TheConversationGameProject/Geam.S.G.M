@@ -14,12 +14,6 @@ type Cafe = {
 };
 type CafeLocation = { province: string; city: string };
 
-const emptyForm = {
-  cafeName: "", email: "", ownerPhone: "", publicPhone: "",
-  province: "", city: "", address: "", managerName: "",
-  password: "", confirmPassword: "",
-};
-
 let supabaseInstance: SupabaseClient<any> | null = null;
 
 function getSupabase() {
@@ -35,7 +29,6 @@ function getSupabase() {
 
 export default function HomePage() {
   const [mode, setMode] = useState<Mode>("choice");
-  const [form, setForm] = useState(emptyForm);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [locations, setLocations] = useState<CafeLocation[]>([]);
@@ -46,10 +39,6 @@ export default function HomePage() {
   const [searchBusy, setSearchBusy] = useState(false);
   const [searchNotice, setSearchNotice] = useState("");
   const [searched, setSearched] = useState(false);
-
-  function update(field: keyof typeof emptyForm, value: string) {
-    setForm((current) => ({ ...current, [field]: value }));
-  }
 
   useEffect(() => {
     if (mode !== "search" || locations.length) return;
@@ -83,11 +72,12 @@ export default function HomePage() {
     event.preventDefault();
     setNotice("");
     if (mode !== "login" && mode !== "register") return;
-    if (mode === "register" && form.password !== form.confirmPassword) {
+    const values = Object.fromEntries(new FormData(event.currentTarget).entries()) as Record<string, string>;
+    if (mode === "register" && values.password !== values.confirmPassword) {
       setNotice("رمز عبور و تکرار آن یکسان نیستند.");
       return;
     }
-    if (mode === "register" && form.password.length < 8) {
+    if (mode === "register" && (values.password ?? "").length < 8) {
       setNotice("رمز عبور باید دست‌کم ۸ نویسه داشته باشد.");
       return;
     }
@@ -97,18 +87,18 @@ export default function HomePage() {
       const supabase = getSupabase();
       if (mode === "register") {
         const { data, error } = await supabase.auth.signUp({
-          email: form.email.trim(),
-          password: form.password,
+          email: (values.email ?? "").trim(),
+          password: values.password,
           options: {
             emailRedirectTo: window.location.origin + "/auth/callback",
             data: {
-              cafe_name: form.cafeName.trim(),
-              owner_phone: form.ownerPhone.trim(),
-              public_phone: form.publicPhone.trim(),
-              province: form.province.trim(),
-              city: form.city.trim(),
-              address: form.address.trim(),
-              manager_name: form.managerName.trim(),
+              cafe_name: (values.cafeName ?? "").trim(),
+              owner_phone: (values.ownerPhone ?? "").trim(),
+              public_phone: (values.publicPhone ?? "").trim(),
+              province: (values.province ?? "").trim(),
+              city: (values.city ?? "").trim(),
+              address: (values.address ?? "").trim(),
+              manager_name: (values.managerName ?? "").trim(),
             },
           },
         });
@@ -120,15 +110,18 @@ export default function HomePage() {
         setNotice("درخواست ثبت کافه انجام شد. پیوند تأیید ارسال‌شده به ایمیلت را باز کن.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({
-          email: form.email.trim(),
-          password: form.password,
+          email: (values.email ?? "").trim(),
+          password: values.password,
         });
         if (error) throw error;
         window.location.assign("/cafe");
         return;
       }
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : "درخواست انجام نشد. دوباره تلاش کن.");
+      const message = error instanceof Error ? error.message : "";
+      setNotice(/rate limit|email rate/i.test(message)
+        ? "سقف ارسال ایمیل ثبت‌نام در سرویس فعلی پر شده است. کمی بعد دوباره تلاش کن؛ برای رفع دائمی باید SMTP اختصاصی به Supabase متصل شود."
+        : message || "درخواست انجام نشد. دوباره تلاش کن.");
     } finally {
       setBusy(false);
     }
@@ -217,33 +210,33 @@ export default function HomePage() {
                 {isRegister && (
                   <>
                     <label htmlFor="cafeName">نام کافه</label>
-                    <input id="cafeName" value={form.cafeName} onChange={(e) => update("cafeName", e.target.value)} required />
+                    <input id="cafeName" name="cafeName" autoComplete="organization" required />
                   </>
                 )}
                 <label htmlFor="email">ایمیل</label>
-                <input id="email" type="email" inputMode="email" autoComplete="email" placeholder="name@example.com" value={form.email} onChange={(e) => update("email", e.target.value)} required />
+                <input id="email" type="email" inputMode="email" autoComplete="email" placeholder="name@example.com" name="email" required />
                 {isRegister && (
                   <>
                     <label htmlFor="ownerPhone">شماره شخصی صاحب کافه</label>
-                    <input id="ownerPhone" type="tel" inputMode="tel" autoComplete="tel" value={form.ownerPhone} onChange={(e) => update("ownerPhone", e.target.value)} required />
+                    <input id="ownerPhone" type="tel" inputMode="tel" autoComplete="tel" name="ownerPhone" required />
                     <label htmlFor="publicPhone">شماره عمومی کافه</label>
-                    <input id="publicPhone" type="tel" inputMode="tel" value={form.publicPhone} onChange={(e) => update("publicPhone", e.target.value)} required />
+                    <input id="publicPhone" type="tel" inputMode="tel" name="publicPhone" required />
                     <div className="field-pair">
-                      <div><label htmlFor="province">استان</label><input id="province" value={form.province} onChange={(e) => update("province", e.target.value)} required /></div>
-                      <div><label htmlFor="city">شهر</label><input id="city" value={form.city} onChange={(e) => update("city", e.target.value)} required /></div>
+                      <div><label htmlFor="province">استان</label><input id="province" name="province" required /></div>
+                      <div><label htmlFor="city">شهر</label><input id="city" name="city" required /></div>
                     </div>
                     <label htmlFor="address">آدرس دقیق کافه</label>
-                    <textarea id="address" rows={2} value={form.address} onChange={(e) => update("address", e.target.value)} required />
+                    <textarea id="address" name="address" rows={2} required />
                     <label htmlFor="managerName">نام دقیق گرداننده</label>
-                    <input id="managerName" value={form.managerName} onChange={(e) => update("managerName", e.target.value)} required />
+                    <input id="managerName" name="managerName" required />
                   </>
                 )}
                 <label htmlFor="password">رمز عبور</label>
-                <input id="password" type="password" autoComplete={isRegister ? "new-password" : "current-password"} value={form.password} onChange={(e) => update("password", e.target.value)} required />
+                <input id="password" type="password" autoComplete={isRegister ? "new-password" : "current-password"} name="password" required />
                 {isRegister && (
                   <>
                     <label htmlFor="confirmPassword">تکرار رمز عبور</label>
-                    <input id="confirmPassword" type="password" autoComplete="new-password" value={form.confirmPassword} onChange={(e) => update("confirmPassword", e.target.value)} required />
+                    <input id="confirmPassword" type="password" autoComplete="new-password" name="confirmPassword" required />
                   </>
                 )}
                 <button className="submit-button" type="submit" disabled={busy}>
