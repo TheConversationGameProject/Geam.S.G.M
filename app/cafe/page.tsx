@@ -6,7 +6,8 @@ export default async function CafePage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/");
 
-  const { data: access } = await supabase.rpc("get_my_access_status").maybeSingle();
+  const { data } = await supabase.rpc("get_my_access_status").maybeSingle();
+  const access = data as { has_access?: boolean } | null;
   const allowed = Boolean(access?.has_access);
 
   return (
