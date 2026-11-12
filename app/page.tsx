@@ -20,7 +20,7 @@ const emptyForm = {
   password: "", confirmPassword: "",
 };
 
-let supabaseInstance: ReturnType<typeof createClient> | null = null;
+let supabaseInstance: ReturnType<typeof createClient<any>> | null = null;
 
 function getSupabase() {
   if (supabaseInstance) return supabaseInstance;
