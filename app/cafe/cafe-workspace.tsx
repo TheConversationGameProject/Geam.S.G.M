@@ -4,6 +4,16 @@ import { useEffect, useState } from "react";
 
 type View = "welcome" | "menu" | "games" | "army-setup" | "army-deal" | "army-intro";
 const ARMY_ROLES = ["کرتیس","خلبان","مأمور نجات","مأمور نجات","دکتر پاسگال","سرهنگ کسلر","راینهارت","گشتاپو ساده","مشتری","مشتری"];
+const ROLE_DETAILS: Record<string, { team: string; description: string[] }> = {
+  "کرتیس": { team: "partisan", description: ["شما می‌تواند لایک سه نفر را ببیند: خلبان، کسلر، دکتر.", "در ضمن شما مسلح هستید؛ دشمن را پیدا کنید..."] },
+  "مأمور نجات": { team: "partisan", description: ["شما باید پارتیزان را شناسایی کنید.", "شما مسلح هستید و باید از خلبان محافظت کنید..."] },
+  "سرهنگ کسلر": { team: "gestapo", description: ["به هیچ‌کس اعتماد نکنید...", "شما مسلح هستید و می‌توانید به‌راحتی دروغ بگویید...", "شما جلیقه دارید..."] },
+  "راینهارت": { team: "gestapo", description: ["سکوت کنید تا در تاریکی بهتر بشنوید...", "شما می‌توانید یک بازیکن را با شناخت نقش دقیقش از بازی حذف کنید... شما مسلح هستید...."] },
+  "گشتاپو ساده": { team: "gestapo", description: ["شما مسلح هستید....", "مراقب سرهنگ باشید..."] },
+  "مشتری": { team: "customer", description: ["شما سایدی ندارید ولی می‌توانید انتخاب کنید در کدام ساید باشید، گشتاپو یا پارتیزان....", "فقط نیاز به یک اسلحه دارید."] },
+  "خلبان": { team: "partisan", description: ["مراقب باشید...", "شما مسلح نیستید ولی می‌توانید باشید...", "به پارتیزان‌ها اعتماد کنید تا نجات پیدا کنید...", "شما یک جلیقه در برابر گلوله و یک جلیقه در برابر رأی دارید.."] },
+  "دکتر پاسگال": { team: "partisan", description: ["شما نظامی نیستید...", "شما می‌توانید دو نفر را نجات دهید...", "مراقب باشید چه کسی را نجات می‌دهید...."] }
+};
 
 function shuffle<T,>(items: T[]): T[] {
   const result = [...items];
@@ -22,6 +32,7 @@ export default function CafeWorkspace({ gifted }: { gifted: boolean }) {
   const [assigned, setAssigned] = useState<Record<string, string>>({});
   const [spinning, setSpinning] = useState(false);
   const [revealedRole, setRevealedRole] = useState("");
+  const [revealedPlayer, setRevealedPlayer] = useState("");
   const [introSeconds, setIntroSeconds] = useState<30 | 45>(30);
   const [introIndex, setIntroIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(30);
@@ -60,6 +71,7 @@ export default function CafeWorkspace({ gifted }: { gifted: boolean }) {
     setRoleDeck(shuffle(ARMY_ROLES));
     setAssigned({});
     setRevealedRole("");
+    setRevealedPlayer("");
     setNotice("");
     setView("army-deal");
   }
@@ -73,12 +85,14 @@ export default function CafeWorkspace({ gifted }: { gifted: boolean }) {
     window.setTimeout(() => {
       setAssigned((previous) => ({ ...previous, [currentPlayer]: role }));
       setRevealedRole(role);
+      setRevealedPlayer(currentPlayer);
       setSpinning(false);
     }, 2300);
   }
 
   function continueAfterRole() {
     setRevealedRole("");
+    setRevealedPlayer("");
     if (Object.keys(assigned).length === 10) {
       setIntroIndex(0);
       setTimeLeft(introSeconds);
@@ -171,7 +185,7 @@ export default function CafeWorkspace({ gifted }: { gifted: boolean }) {
         )}
         {view === "army-deal" && (
           <section className="command-content army-content">
-            <div className="command-heading"><div><p className="dispatch-overline">SECRET ARMY · ROLE DEALING</p><h1>تقسیم <em>نقش‌ها</em></h1><p>کارت {dealtCount + 1} از ۱۰</p></div><div className="command-crest">{String(dealtCount + 1).padStart(2, "0")}<span>OF 10</span></div></div>
+            <div className="command-heading"><div><p className="dispatch-overline">SECRET ARMY · ROLE DEALING</p><h1>تقسیم <em>نقش‌ها</em></h1><p>کارت {revealedRole ? dealtCount : dealtCount + 1} از ۱۰</p></div><div className="command-crest">{String(dealtCount + 1).padStart(2, "0")}<span>OF 10</span></div></div>
             <div className="army-progress" aria-label={dealtCount + " از ۱۰ نقش تقسیم شده"}><span style={{ width: (dealtCount * 10) + "%" }} /></div>
             <p className="army-hint">گوشی را به بازیکنِ نوبت‌دار بده. نام او روی کارت دیده می‌شود؛ بازیکن برای دیدن نقش خودش روی کارت می‌زند.</p>
             {!revealedRole ? (
@@ -183,8 +197,13 @@ export default function CafeWorkspace({ gifted }: { gifted: boolean }) {
               </button>
             ) : (
               <div className="role-reveal-panel">
-                <p>این کارت متعلق به</p><h2>{currentPlayer}</h2>
-                <div className="role-reveal-card"><small>SECRET ROLE · CLASSIFIED</small><strong>{revealedRole}</strong><span>پس از خواندن نقش، دکمه «فهمیدم» را بزن.</span></div>
+                <p>این کارت متعلق به</p><h2>{revealedPlayer}</h2>
+                <div className={"role-reveal-card role-team-" + ROLE_DETAILS[revealedRole].team}>
+                  <small>SECRET ROLE · CLASSIFIED</small>
+                  <strong>{revealedRole}</strong>
+                  <div className="role-description">{ROLE_DETAILS[revealedRole].description.map((line, index) => <p key={index}>{line}</p>)}</div>
+                  <span>پس از خواندن نقش، دکمه «فهمیدم» را بزن.</span>
+                </div>
                 <button className="army-primary-button" onClick={continueAfterRole}>فهمیدم <span>←</span></button>
               </div>
             )}
