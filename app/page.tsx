@@ -90,7 +90,6 @@ export default function HomePage() {
           email: (values.email ?? "").trim(),
           password: values.password,
           options: {
-            emailRedirectTo: window.location.origin + "/auth/callback",
             data: {
               cafe_name: (values.cafeName ?? "").trim(),
               owner_phone: (values.ownerPhone ?? "").trim(),
@@ -107,7 +106,7 @@ export default function HomePage() {
           window.location.assign("/cafe");
           return;
         }
-        setNotice("درخواست ثبت کافه انجام شد. پیوند تأیید ارسال‌شده به ایمیلت را باز کن.");
+        setNotice("حساب ساخته شد اما نشست ورود دریافت نشد. تنظیم «تأیید ایمیل» در Supabase هنوز غیرفعال نشده است؛ تا اصلاح تنظیمات، ورود خودکار ممکن نیست.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: (values.email ?? "").trim(),
@@ -120,7 +119,7 @@ export default function HomePage() {
     } catch (error) {
       const message = error instanceof Error ? error.message : "";
       setNotice(/rate limit|email rate/i.test(message)
-        ? "سقف ارسال ایمیل ثبت‌نام در سرویس فعلی پر شده است. کمی بعد دوباره تلاش کن؛ برای رفع دائمی باید SMTP اختصاصی به Supabase متصل شود."
+        ? "ثبت‌نام هنوز به ارسال ایمیل وابسته است. تنظیم تأیید ایمیل Supabase باید غیرفعال شود."
         : message || "درخواست انجام نشد. دوباره تلاش کن.");
     } finally {
       setBusy(false);
