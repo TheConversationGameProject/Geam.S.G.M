@@ -208,3 +208,14 @@ body{font-family:"Vazirmatn","Noto Sans Arabic","Noto Naskh Arabic UI",Tahoma,sa
 /* The card completes several full rotations during the reveal sequence. */
 .role-card-spinning{animation:role-card-turn .72s linear infinite}
 @keyframes role-card-turn{from{transform:perspective(700px) rotateY(0deg)}to{transform:perspective(700px) rotateY(360deg)}}
+
+/* Secret Army role-team colors and approved role descriptions */
+
+.role-reveal-card.role-team-partisan{border-color:#8ebd75;background:linear-gradient(145deg,#355338,#1b2c22);box-shadow:inset 0 0 0 5px #a9d88a18}
+.role-reveal-card.role-team-partisan strong{color:#d9f0c2}
+.role-reveal-card.role-team-gestapo{border-color:#a94a4a;background:linear-gradient(145deg,#581f25,#241416);box-shadow:inset 0 0 0 5px #d36a6a18}
+.role-reveal-card.role-team-gestapo strong{color:#f1c2bd}
+.role-reveal-card.role-team-customer{border-color:#c78336;background:linear-gradient(145deg,#68421d,#302014);box-shadow:inset 0 0 0 5px #e4a34d18}
+.role-reveal-card.role-team-customer strong{color:#ffe0a8}
+.role-description{width:100%;display:grid;gap:5px}
+.role-description p{margin:0;color:#f0e7d5;font-size:11px;line-height:1.9;text-align:center}
