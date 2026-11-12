@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 type Mode = "choice" | "login" | "register" | "search";
 type Cafe = {
@@ -20,7 +20,7 @@ const emptyForm = {
   password: "", confirmPassword: "",
 };
 
-let supabaseInstance: ReturnType<typeof createClient<any>> | null = null;
+let supabaseInstance: SupabaseClient<any> | null = null;
 
 function getSupabase() {
   if (supabaseInstance) return supabaseInstance;
