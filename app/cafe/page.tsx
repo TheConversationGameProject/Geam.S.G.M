@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import CafeWorkspace from "./cafe-workspace";
 
 export default async function CafePage() {
   const supabase = await createSupabaseServerClient();
@@ -42,25 +43,5 @@ export default async function CafePage() {
     );
   }
 
-  return (
-    <main className="welcome-screen">
-      <div className="welcome-grain" aria-hidden="true" />
-      <section className="welcome-note">
-        <div className="welcome-seal">C</div>
-        {gifted ? (
-          <>
-            <p>به کافه کاندیدا خوش آمدی.</p>
-            <p className="gift-message">یک ماه اشتراک هدیه برای کافه‌ات فعال شد.</p>
-            <span>تیم همراه‌یار</span>
-          </>
-        ) : (
-          <>
-            <p>اشتراک کافه فعال است.</p>
-            <span>ورود موفق</span>
-          </>
-        )}
-        <form action="/auth/signout" method="post"><button className="quiet-button">خروج از حساب</button></form>
-      </section>
-    </main>
-  );
+  return <CafeWorkspace gifted={Boolean(gifted)} />;
 }
