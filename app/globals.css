@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap');
 :root{color-scheme:dark;--night:#090b0d;--coal:#111417;--paper:#d8cfb9;--muted:#8f8a7d;--brass:#b59a69;--blood:#792f32;--line:rgba(181,154,105,.42)}
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%;background:var(--night)}
@@ -124,7 +125,6 @@ h1{font-size:clamp(35px,10vw,49px);font-weight:500;letter-spacing:-1.7px;margin:
 
 
 /* Candida Command Desk — original visual system */
-@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap');
 body{font-family:"Vazirmatn","Noto Sans Arabic","Noto Naskh Arabic UI",Tahoma,sans-serif;font-feature-settings:"kern";font-optical-sizing:auto}
 .command-screen{min-height:100svh;position:relative;isolation:isolate;overflow:hidden;padding:18px 14px 30px;background:radial-gradient(ellipse at 50% 18%,#30291f 0%,#191a18 42%,#090c0e 100%);color:#e5dac3}
 .command-noise{position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.12;background-image:repeating-linear-gradient(0deg,transparent 0 3px,#d2b77b0b 4px),linear-gradient(115deg,transparent 20%,#a77d3d10 50%,transparent 80%)}
