@@ -204,3 +204,7 @@ body{font-family:"Vazirmatn","Noto Sans Arabic","Noto Naskh Arabic UI",Tahoma,sa
 .intro-reset-button{min-height:48px}
 .intro-next-button{margin-top:12px}
 @media(max-width:360px){.army-player-list{grid-template-columns:1fr}.army-deal-footer{font-size:7px}.intro-duration-control{align-items:flex-start;flex-direction:column}}
+
+/* The card completes several full rotations during the reveal sequence. */
+.role-card-spinning{animation:role-card-turn .72s linear infinite}
+@keyframes role-card-turn{from{transform:perspective(700px) rotateY(0deg)}to{transform:perspective(700px) rotateY(360deg)}}
