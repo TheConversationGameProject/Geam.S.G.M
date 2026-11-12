@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createClient as createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type Mode = "choice" | "login" | "register" | "search";
 type Cafe = {
@@ -13,19 +13,6 @@ type Cafe = {
   manager_name: string;
 };
 type CafeLocation = { province: string; city: string };
-
-let supabaseInstance: SupabaseClient<any> | null = null;
-
-function getSupabase() {
-  if (supabaseInstance) return supabaseInstance;
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) throw new Error("اتصال سامانه هنوز پیکربندی نشده است.");
-  supabaseInstance = createClient(url, key, {
-    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
-  });
-  return supabaseInstance;
-}
 
 export default function HomePage() {
   const [mode, setMode] = useState<Mode>("choice");
@@ -46,7 +33,7 @@ export default function HomePage() {
     setLocationsBusy(true);
     (async () => {
       try {
-        const { data, error } = await getSupabase().rpc("get_active_cafe_locations");
+        const { data, error } = await createSupabaseBrowserClient().rpc("get_active_cafe_locations");
         if (!alive) return;
         if (error) setSearchNotice("دریافت فهرست شهرها انجام نشد. دوباره تلاش کن.");
         else setLocations((data ?? []) as CafeLocation[]);
@@ -84,7 +71,7 @@ export default function HomePage() {
 
     setBusy(true);
     try {
-      const supabase = getSupabase();
+      const supabase = createSupabaseBrowserClient();
       if (mode === "register") {
         const { data, error } = await supabase.auth.signUp({
           email: (values.email ?? "").trim(),
@@ -136,7 +123,7 @@ export default function HomePage() {
     setSearchNotice("");
     setSearched(false);
     try {
-      const { data, error } = await getSupabase().rpc("search_active_cafes", {
+      const { data, error } = await createSupabaseBrowserClient().rpc("search_active_cafes", {
         p_province: province,
         p_city: city,
       });
