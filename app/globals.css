@@ -88,9 +88,35 @@ h1{font-size:clamp(35px,10vw,49px);font-weight:500;letter-spacing:-1.7px;margin:
 .welcome-note,.access-locked{position:relative;z-index:1;width:min(100%,420px);min-height:260px;padding:38px 24px;border:1px solid #9b8153;background:linear-gradient(145deg,#302b22,#1b1a17);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-shadow:0 22px 80px #0008}
 .welcome-seal{width:58px;height:58px;border:1px solid #b69a63;border-radius:50%;display:grid;place-items:center;font:italic 31px Georgia,serif;color:#c3a873;margin-bottom:26px}
 .welcome-note p{font-size:17px;color:#e0d4b8;margin:0 0 13px}
+.welcome-note .gift-message{font-size:12px;color:#c6a873;line-height:2}
 .welcome-note span{font-size:10px;color:#a99a7c}
 .access-locked h1{font-size:21px;color:#e0d4b8;margin:0 0 12px}
 .access-locked p{font-size:13px;color:#b3a78f;line-height:2}
 .quiet-button{border:1px solid #806d4b;background:transparent;color:#c4b18a;padding:10px 22px;margin-top:16px;font-size:12px}
+.admin-shell{min-height:100svh;padding:22px 15px 40px;background:radial-gradient(ellipse at 50% 0%,#29231b,#111416 46%,#090b0d);color:#e1d6c0}
+.admin-header,.admin-summary,.admin-list{width:min(100%,760px);margin:0 auto}
+.admin-header{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #705b39;padding:5px 0 18px}
+.admin-kicker,.admin-file{font:9px Georgia,serif;letter-spacing:1.5px;color:#a88b59}
+.admin-header h1{font-size:25px;margin-top:5px}
+.admin-logout{border:1px solid #6f5c3d;background:transparent;color:#c6b48e;padding:8px 14px;font-size:11px}
+.admin-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+.admin-summary>div{border:1px solid #5e4d32;background:#1a1b19;padding:12px 9px;display:grid;gap:7px}
+.admin-summary span{font-size:9px;color:#a99b7d}
+.admin-summary strong{font-size:20px;font-weight:500;color:#d4b77f}
+.admin-list{display:grid;gap:12px;margin-top:15px}
+.admin-cafe{border:1px solid #6a5637;background:linear-gradient(145deg,#24231e,#151819);padding:14px;box-shadow:0 12px 32px #0004}
+.admin-cafe-top{display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid #51452f;padding-bottom:10px}
+.admin-cafe-top h2{font-size:16px;font-weight:600;margin:5px 0 0}
+.admin-state{font-size:10px;padding:4px 9px;border:1px solid}
+.admin-state.is-on{color:#a8b68b;border-color:#65744b}
+.admin-state.is-off{color:#d39a8c;border-color:#805148}
+.admin-details{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;padding:12px 0}
+.admin-details p{min-width:0;display:grid;gap:3px;margin:0;font-size:10px;line-height:1.8;overflow-wrap:anywhere;color:#e0d5bf}
+.admin-details p span{font-size:9px;color:#9e906f}
+.admin-details .admin-wide{grid-column:1/-1}
+.admin-toggle-form{border-top:1px solid #51452f;padding-top:10px}
+.admin-toggle-form button{width:100%;min-height:40px;border:1px solid #9b7950;background:#30271e;color:#d9c59c;font-size:11px}
+.admin-empty{border:1px dashed #68563a;text-align:center;padding:22px;color:#b7a98d;font-size:12px}
 @media(min-width:600px){.landing{padding-top:26px}.scene{min-height:690px}.seal{margin-top:12px}}
+@media(max-width:380px){.admin-details{grid-template-columns:1fr}.admin-details .admin-wide{grid-column:auto}}
 @media(max-height:740px){.scene{min-height:600px}.scene-content{padding:8px 0 12px}.seal{width:86px;height:86px;margin:2px auto 13px}.seal-letter{font-size:48px}.intro{margin-bottom:14px}.entry-form,.search-panel{max-height:50svh}}
