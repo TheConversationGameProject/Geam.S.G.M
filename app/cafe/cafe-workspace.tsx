@@ -20,7 +20,6 @@ export default function CafeWorkspace({ gifted }: { gifted: boolean }) {
   const [players, setPlayers] = useState<string[]>(Array(10).fill(""));
   const [roleDeck, setRoleDeck] = useState<string[]>([]);
   const [assigned, setAssigned] = useState<Record<string, string>>({});
-  const [selectedPlayer, setSelectedPlayer] = useState("");
   const [spinning, setSpinning] = useState(false);
   const [revealedRole, setRevealedRole] = useState("");
   const [introSeconds, setIntroSeconds] = useState<30 | 45>(30);
@@ -60,19 +59,19 @@ export default function CafeWorkspace({ gifted }: { gifted: boolean }) {
     setPlayers(cleaned);
     setRoleDeck(shuffle(ARMY_ROLES));
     setAssigned({});
-    setSelectedPlayer("");
     setRevealedRole("");
     setNotice("");
     setView("army-deal");
   }
 
   function revealNextRole() {
-    if (!selectedPlayer || spinning || revealedRole) return;
+    const currentPlayer = players[Object.keys(assigned).length];
+    if (!currentPlayer || spinning || revealedRole) return;
     const role = roleDeck[Object.keys(assigned).length];
     if (!role) return;
     setSpinning(true);
     window.setTimeout(() => {
-      setAssigned((previous) => ({ ...previous, [selectedPlayer]: role }));
+      setAssigned((previous) => ({ ...previous, [currentPlayer]: role }));
       setRevealedRole(role);
       setSpinning(false);
     }, 2300);
@@ -80,7 +79,6 @@ export default function CafeWorkspace({ gifted }: { gifted: boolean }) {
 
   function continueAfterRole() {
     setRevealedRole("");
-    setSelectedPlayer("");
     if (Object.keys(assigned).length === 10) {
       setIntroIndex(0);
       setTimeLeft(introSeconds);
@@ -105,8 +103,8 @@ export default function CafeWorkspace({ gifted }: { gifted: boolean }) {
     }
   }
 
-  const remainingPlayers = players.filter((name) => name && !assigned[name]);
   const dealtCount = Object.keys(assigned).length;
+  const currentPlayer = players[dealtCount] || "";
 
   return (
     <main className="command-screen">
@@ -175,25 +173,19 @@ export default function CafeWorkspace({ gifted }: { gifted: boolean }) {
           <section className="command-content army-content">
             <div className="command-heading"><div><p className="dispatch-overline">SECRET ARMY · ROLE DEALING</p><h1>تقسیم <em>نقش‌ها</em></h1><p>کارت {dealtCount + 1} از ۱۰</p></div><div className="command-crest">{String(dealtCount + 1).padStart(2, "0")}<span>OF 10</span></div></div>
             <div className="army-progress" aria-label={dealtCount + " از ۱۰ نقش تقسیم شده"}><span style={{ width: (dealtCount * 10) + "%" }} /></div>
-            <p className="army-hint">نام بازیکنی را که اکنون کارت را دریافت می‌کند انتخاب کن. هر بازیکن فقط یک بار می‌تواند انتخاب شود.</p>
+            <p className="army-hint">گوشی را به بازیکنِ نوبت‌دار بده. نام او روی کارت دیده می‌شود؛ بازیکن برای دیدن نقش خودش روی کارت می‌زند.</p>
             {!revealedRole ? (
-              <>
-                <label className="army-select-label">بازیکن دریافت‌کننده کارت
-                  <select value={selectedPlayer} disabled={spinning} onChange={(event) => setSelectedPlayer(event.target.value)}>
-                    <option value="">انتخاب نام بازیکن</option>
-                    {remainingPlayers.map((name) => <option key={name} value={name}>{name}</option>)}
-                  </select>
-                </label>
-                <div className={"role-card " + (spinning ? "role-card-spinning" : "")}>
-                  <span className="role-card-stamp">CANDIDA · 1945</span><span className="role-card-label">{spinning ? "در حال رمزگشایی کارت..." : selectedPlayer || "کارت محرمانه"}</span><strong>{spinning ? "✦" : "؟"}</strong><small>{spinning ? "PLEASE WAIT" : "SECRET ROLE"}</small>
-                </div>
-                <button className="army-primary-button" disabled={!selectedPlayer || spinning} onClick={revealNextRole}>{spinning ? "در حال چرخش کارت..." : "نمایش نقش این بازیکن"} <span>←</span></button>
-              </>
+              <button type="button" className={"role-card role-card-private " + (spinning ? "role-card-spinning" : "")} onClick={revealNextRole} disabled={spinning}>
+                <span className="role-card-stamp">CANDIDA · 1945</span>
+                <span className="role-card-label">{currentPlayer}</span>
+                <strong>{spinning ? "✦" : "؟"}</strong>
+                <small>{spinning ? "در حال باز شدن..." : "برای مشاهده نقش لمس کن"}</small>
+              </button>
             ) : (
               <div className="role-reveal-panel">
-                <p>نقش اختصاص‌یافته به</p><h2>{selectedPlayer}</h2>
-                <div className="role-reveal-card"><small>SECRET ROLE · CLASSIFIED</small><strong>{revealedRole}</strong><span>این نقش را فقط به بازیکن انتخاب‌شده اعلام کن.</span></div>
-                <button className="army-primary-button" onClick={continueAfterRole}>{dealtCount === 10 ? "ورود به ترن معارفه" : "نقش بعدی"} <span>←</span></button>
+                <p>این کارت متعلق به</p><h2>{currentPlayer}</h2>
+                <div className="role-reveal-card"><small>SECRET ROLE · CLASSIFIED</small><strong>{revealedRole}</strong><span>پس از خواندن نقش، دکمه «فهمیدم» را بزن.</span></div>
+                <button className="army-primary-button" onClick={continueAfterRole}>فهمیدم <span>←</span></button>
               </div>
             )}
             <div className="army-deal-footer"><span>نقش‌های تقسیم‌شده: {dealtCount} / ۱۰</span><span>نقش‌ها تصادفی و بدون جایگزینی اضافه</span></div>
