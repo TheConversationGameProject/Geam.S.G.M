@@ -59,6 +59,7 @@ export default function HomePage() {
     event.preventDefault();
     setNotice("");
     if (mode !== "login" && mode !== "register") return;
+    if (busy) return;
     const values = Object.fromEntries(new FormData(event.currentTarget).entries()) as Record<string, string>;
     if (mode === "register" && values.password !== values.confirmPassword) {
       setNotice("رمز عبور و تکرار آن یکسان نیستند.");
@@ -226,7 +227,7 @@ export default function HomePage() {
                   </>
                 )}
                 <button className="submit-button" type="submit" disabled={busy}>
-                  <span>{busy ? "در حال پردازش..." : isRegister ? "ثبت کافه" : "ورود راوی"}</span><span>←</span>
+                  <span>{busy ? (isRegister ? "در حال ثبت..." : "در حال ورود...") : isRegister ? "ثبت کافه" : "ورود راوی"}</span><span>←</span>
                 </button>
                 {notice && <p className="notice" role="status">{notice}</p>}
                 <button className="switch-mode" type="button" onClick={() => changeMode(isRegister ? "login" : "register")}>
