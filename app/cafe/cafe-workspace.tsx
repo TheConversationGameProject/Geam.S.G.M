@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import ArmyGameFlow from "./army-game-flow";
 
 type View = "welcome" | "menu" | "games" | "army-setup" | "army-deal" | "army-intro" | "army-flow";
@@ -38,6 +39,26 @@ export default function CafeWorkspace({ gifted }: { gifted: boolean }) {
   const [introIndex, setIntroIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(30);
   const [timerRunning, setTimerRunning] = useState(false);
+  const [recoveryChecked, setRecoveryChecked] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    const restore = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !active) { if (active) setRecoveryChecked(true); return; }
+      const { data } = await supabase.from("army_game_saves").select("game_state,status").eq("user_id", user.id).maybeSingle();
+      if (!active) return;
+      if (data?.status === "active" && data.game_state?.players?.length === 10 && data.game_state?.assigned) {
+        setPlayers(data.game_state.players);
+        setAssigned(data.game_state.assigned);
+        setView("army-flow");
+      }
+      setRecoveryChecked(true);
+    };
+    restore();
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     if (!timerRunning || view !== "army-intro") return;
