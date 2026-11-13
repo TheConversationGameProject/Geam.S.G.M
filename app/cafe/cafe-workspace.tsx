@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useState } from "react";
 import ArmyGameFlow from "./army-game-flow";
 
-type View = "welcome" | "menu" | "games" | "army-setup" | "army-deal" | "army-intro" | "army-flow";
+type View = "welcome" | "menu" | "games" | "army-setup" | "army-deal" | "army-flow";
 const ARMY_ROLES = ["کرتیس","خلبان","مأمور نجات","مأمور نجات","دکتر پاسگال","سرهنگ کسلر","راینهارت","گشتاپو ساده","مشتری","مشتری"];
 const ROLE_DETAILS: Record<string, { team: string; description: string[] }> = {
   "کرتیس": { team: "partisan", description: ["شما می‌تواند لایک سه نفر را ببیند: خلبان، کسلر، دکتر.", "در ضمن شما مسلح هستید؛ دشمن را پیدا کنید..."] },
@@ -35,72 +34,6 @@ export default function CafeWorkspace({ gifted }: { gifted: boolean }) {
   const [spinning, setSpinning] = useState(false);
   const [revealedRole, setRevealedRole] = useState("");
   const [revealedPlayer, setRevealedPlayer] = useState("");
-  const [introSeconds, setIntroSeconds] = useState<30 | 45>(30);
-  const [introIndex, setIntroIndex] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(30);
-  const [timerRunning, setTimerRunning] = useState(false);
-  const [recoveryChecked, setRecoveryChecked] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    const restore = async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user || !active) { if (active) setRecoveryChecked(true); return; }
-      const { data } = await supabase.from("army_game_saves").select("game_state,status").eq("user_id", user.id).maybeSingle();
-      if (!active) return;
-      if (data?.status === "active" && data.game_state?.workspace) {
-        const saved = data.game_state.workspace;
-        setPlayers(saved.players || Array(10).fill(""));
-        setRoleDeck(saved.roleDeck || []);
-        setAssigned(saved.assigned || {});
-        setRevealedRole(saved.revealedRole || "");
-        setRevealedPlayer(saved.revealedPlayer || "");
-        setView(saved.view === "army-deal" ? "army-deal" : "army-setup");
-      } else if (data?.status === "active" && data.game_state?.players?.length === 10 && data.game_state?.assigned) {
-        setPlayers(data.game_state.players);
-        setAssigned(data.game_state.assigned);
-        setView("army-flow");
-      }
-      setRecoveryChecked(true);
-    };
-    restore();
-    return () => { active = false; };
-  }, []);
-
-  useEffect(() => {
-    if (!timerRunning || view !== "army-intro") return;
-    const timer = window.setInterval(() => {
-      setTimeLeft((value) => {
-        if (value <= 1) {
-          window.clearInterval(timer);
-          setTimerRunning(false);
-          return 0;
-        }
-        return value - 1;
-      });
-    }, 1000);
-    return () => window.clearInterval(timer);
-  }, [timerRunning, view]);
-
-
-
-  useEffect(() => {
-    if (view !== "army-setup" && view !== "army-deal") return;
-    const timer = window.setTimeout(async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      await supabase.from("army_game_saves").upsert({
-        user_id: user.id,
-        game_state: { workspace: { view, players, roleDeck, assigned, revealedRole, revealedPlayer } },
-        status: "active",
-        updated_at: new Date().toISOString()
-      }, { onConflict: "user_id" });
-    }, 450);
-    return () => window.clearTimeout(timer);
-  }, [view, players, roleDeck, assigned, revealedRole, revealedPlayer]);
-
   function openSection(label: string) {
     setNotice("بخش «" + label + "» در منوی گرداننده ثبت شد؛ برای فعال‌سازی آن باید روند اجرایی‌اش مشخص شود.");
   }
@@ -142,22 +75,6 @@ export default function CafeWorkspace({ gifted }: { gifted: boolean }) {
     setRevealedRole("");
     setRevealedPlayer("");
     if (Object.keys(assigned).length === 10) setView("army-flow");
-  }
-
-  function changeIntroDuration(value: 30 | 45) {
-    setIntroSeconds(value);
-    setTimeLeft(value);
-    setTimerRunning(false);
-  }
-
-  function nextIntroPlayer() {
-    setTimerRunning(false);
-    if (introIndex < 9) {
-      setIntroIndex((value) => value + 1);
-      setTimeLeft(introSeconds);
-    } else {
-      setNotice("ترن معارفه هر ۱۰ بازیکن به پایان رسید.");
-    }
   }
 
   const dealtCount = Object.keys(assigned).length;
@@ -253,18 +170,8 @@ export default function CafeWorkspace({ gifted }: { gifted: boolean }) {
             <div className="army-deal-footer"><span>نقش‌های تقسیم‌شده: {dealtCount} / ۱۰</span><span>نقش‌ها تصادفی و بدون جایگزینی اضافه</span></div>
           </section>
         )}
-        {view === "army-flow" && <ArmyGameFlow players={players} assigned={assigned} roleDetails={ROLE_DETAILS} />}
-        {view === "army-intro" && (
-          <section className="command-content army-content">
-            <div className="command-heading"><div><p className="dispatch-overline">SECRET ARMY · INTRODUCTION</p><h1>ترن <em>معارفه</em></h1><p>بدون چالش؛ فقط معرفی بازیکنان.</p></div><div className="command-crest">01<span>INTRO</span></div></div>
-            <div className="intro-duration-control"><span>زمان صحبت هر بازیکن</span><div><button className={introSeconds === 30 ? "selected" : ""} onClick={() => changeIntroDuration(30)}>۳۰ ثانیه</button><button className={introSeconds === 45 ? "selected" : ""} onClick={() => changeIntroDuration(45)}>۴۵ ثانیه</button></div></div>
-            <div className="intro-player-card"><small>نوبت معرفی · بازیکن {introIndex + 1} از ۱۰</small><strong>{players[introIndex]}</strong><div className={"intro-countdown " + (timeLeft === 0 ? "time-finished" : "")}>{timeLeft}</div><span>{timeLeft === 0 ? "زمان این بازیکن تمام شد" : "زمان باقی‌مانده برای صحبت"}</span></div>
-            <div className="intro-timer-actions"><button className="army-primary-button" onClick={() => setTimerRunning((value) => !value)} disabled={timeLeft === 0}>{timerRunning ? "توقف زمان" : "شروع زمان"} <span>◷</span></button><button className="intro-reset-button" onClick={() => { setTimerRunning(false); setTimeLeft(introSeconds); }}>شروع مجدد زمان</button></div>
-            <button className="army-primary-button intro-next-button" onClick={nextIntroPlayer}>{introIndex === 9 ? "پایان ترن معارفه" : "بازیکن بعدی"} <span>←</span></button>
-            {notice && <p className="command-notice" role="status">{notice}</p>}
-            <p className="army-hint">در این مرحله هیچ چالشی اجرا نمی‌شود.</p>
-          </section>
-        )}
+        {view === "army-flow" && <ArmyGameFlow players={players} assigned={assigned} roleDetails={ROLE_DETAILS} onReturnToGames={() => { setPlayers(Array(10).fill("")); setRoleDeck([]); setAssigned({}); setRevealedRole(""); setRevealedPlayer(""); setNotice(""); setView("games"); }} />}
+
       </div>
     </main>
   );
