@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import ArmyGameFlow from "./army-game-flow";
 
-type View = "welcome" | "menu" | "games" | "army-setup" | "army-deal" | "army-intro";
+type View = "welcome" | "menu" | "games" | "army-setup" | "army-deal" | "army-intro" | "army-flow";
 const ARMY_ROLES = ["کرتیس","خلبان","مأمور نجات","مأمور نجات","دکتر پاسگال","سرهنگ کسلر","راینهارت","گشتاپو ساده","مشتری","مشتری"];
 const ROLE_DETAILS: Record<string, { team: string; description: string[] }> = {
   "کرتیس": { team: "partisan", description: ["شما می‌تواند لایک سه نفر را ببیند: خلبان، کسلر، دکتر.", "در ضمن شما مسلح هستید؛ دشمن را پیدا کنید..."] },
@@ -93,12 +94,7 @@ export default function CafeWorkspace({ gifted }: { gifted: boolean }) {
   function continueAfterRole() {
     setRevealedRole("");
     setRevealedPlayer("");
-    if (Object.keys(assigned).length === 10) {
-      setIntroIndex(0);
-      setTimeLeft(introSeconds);
-      setTimerRunning(false);
-      setView("army-intro");
-    }
+    if (Object.keys(assigned).length === 10) setView("army-flow");
   }
 
   function changeIntroDuration(value: 30 | 45) {
@@ -210,6 +206,7 @@ export default function CafeWorkspace({ gifted }: { gifted: boolean }) {
             <div className="army-deal-footer"><span>نقش‌های تقسیم‌شده: {dealtCount} / ۱۰</span><span>نقش‌ها تصادفی و بدون جایگزینی اضافه</span></div>
           </section>
         )}
+        {view === "army-flow" && <ArmyGameFlow players={players} assigned={assigned} roleDetails={ROLE_DETAILS} />}
         {view === "army-intro" && (
           <section className="command-content army-content">
             <div className="command-heading"><div><p className="dispatch-overline">SECRET ARMY · INTRODUCTION</p><h1>ترن <em>معارفه</em></h1><p>بدون چالش؛ فقط معرفی بازیکنان.</p></div><div className="command-crest">01<span>INTRO</span></div></div>
