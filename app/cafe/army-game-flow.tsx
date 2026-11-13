@@ -43,7 +43,7 @@ export default function ArmyGameFlow({players,assigned,roleDetails,onReturnToGam
  const [totalShots,setTotalShots]=useState(0),[burnedGuns,setBurnedGuns]=useState(0);
  const [exitAnnouncement,setExitAnnouncement]=useState<string[]>([]);
  const rolePlayer=(role:string)=>players.find(p=>assigned[p]===role)||"";
- const activePlayers=players.filter(p=>!logs.some(x=>x.text.startsWith("اخراج: "+p+" ")));
+ const activePlayers=useMemo(()=>players.filter(p=>!logs.some(x=>x.text.startsWith("اخراج: "+p+" "))),[players,logs]);
  const current=(order[speaker]&&activePlayers.includes(order[speaker])?order[speaker]:order.slice(speaker).find(p=>activePlayers.includes(p))||order.find(p=>activePlayers.includes(p)))||"";
  const currentRole=assigned[current]||"";
  const currentGun=guns[current]||"none";
