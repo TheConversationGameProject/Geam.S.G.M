@@ -71,6 +71,7 @@ export default function HomePage() {
     }
 
     setBusy(true);
+    let redirecting = false;
     try {
       const supabase = createSupabaseBrowserClient();
       if (mode === "register") {
@@ -91,6 +92,7 @@ export default function HomePage() {
         });
         if (error) throw error;
         if (data.session) {
+          redirecting = true;
           window.location.assign("/cafe");
           return;
         }
@@ -101,6 +103,7 @@ export default function HomePage() {
           password: values.password,
         });
         if (error) throw error;
+        redirecting = true;
         window.location.assign("/cafe");
         return;
       }
@@ -110,7 +113,7 @@ export default function HomePage() {
         ? "ثبت‌نام هنوز به ارسال ایمیل وابسته است. تنظیم تأیید ایمیل Supabase باید غیرفعال شود."
         : message || "درخواست انجام نشد. دوباره تلاش کن.");
     } finally {
-      setBusy(false);
+      if (!redirecting) setBusy(false);
     }
   }
 
