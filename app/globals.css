@@ -254,3 +254,22 @@ body{font-family:"Vazirmatn","Noto Sans Arabic","Noto Naskh Arabic UI",Tahoma,sa
 .army-live-player{position:relative;overflow:hidden}
 .army-live-player:after{content:"FIELD DOSSIER · 1945";position:absolute;left:10px;bottom:8px;font:7px Georgia,serif;letter-spacing:1.5px;opacity:.45;pointer-events:none}
 .army-live-player h2{position:relative;z-index:1}
+
+
+/* Secret Army command console: compact icon controls and dossier overlays */
+.army-utility-bar{position:sticky;top:8px;z-index:12;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:12px 0;padding:7px;border:1px solid #806a47;background:rgba(12,15,15,.96);backdrop-filter:blur(12px);box-shadow:0 8px 24px #0008}
+.army-utility-bar button{min-height:42px;padding:7px 4px;border:1px solid #554832;background:linear-gradient(145deg,#25231e,#151918);color:#d6c092;font-size:9px;line-height:1.6}
+.army-utility-bar .army-danger-link{color:#d49a91;border-color:#704044}
+.army-action-selector{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:14px 0}
+.army-action-tile{min-width:0;min-height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;border:1px solid #756044;background:linear-gradient(155deg,#29251e,#141817);color:#d4b77f;font-size:21px;box-shadow:inset 0 0 0 1px #ffffff05}
+.army-action-tile span{font-size:8px;color:#d5c7a9;white-space:nowrap}
+.army-action-tile:disabled{opacity:.32;filter:grayscale(.8)}
+.army-overlay{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(3,5,6,.88);backdrop-filter:blur(9px)}
+.army-overlay-panel{width:min(100%,460px);max-height:min(82svh,760px);overflow:auto;display:grid;gap:12px;padding:20px 16px;border:1px solid #a08353;background:linear-gradient(150deg,#28231c,#111615 72%);box-shadow:0 22px 70px #000b,inset 0 0 0 4px #b59a6910}
+.army-overlay-panel h2{margin:0;color:#e1cfaa;font-size:19px}
+.army-overlay-panel p{margin:0;color:#c6b99e;font-size:12px;line-height:2}
+.army-overlay-close{justify-self:start;border:1px solid #6c5b40;background:#171a18;color:#cdb98e;padding:7px 13px;font-size:11px}
+.army-history-item{padding:10px 0;border-top:1px solid #554832}
+.army-history-item>b{color:#d0b27a;font-size:12px}
+.army-history-item p{margin-top:6px}
+@media(max-width:360px){.army-action-selector{gap:4px}.army-action-tile{min-height:66px}.army-action-tile span{font-size:7px}.army-utility-bar button{font-size:8px}}
