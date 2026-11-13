@@ -49,7 +49,15 @@ export default function CafeWorkspace({ gifted }: { gifted: boolean }) {
       if (!user || !active) { if (active) setRecoveryChecked(true); return; }
       const { data } = await supabase.from("army_game_saves").select("game_state,status").eq("user_id", user.id).maybeSingle();
       if (!active) return;
-      if (data?.status === "active" && data.game_state?.players?.length === 10 && data.game_state?.assigned) {
+      if (data?.status === "active" && data.game_state?.workspace) {
+        const saved = data.game_state.workspace;
+        setPlayers(saved.players || Array(10).fill(""));
+        setRoleDeck(saved.roleDeck || []);
+        setAssigned(saved.assigned || {});
+        setRevealedRole(saved.revealedRole || "");
+        setRevealedPlayer(saved.revealedPlayer || "");
+        setView(saved.view === "army-deal" ? "army-deal" : "army-setup");
+      } else if (data?.status === "active" && data.game_state?.players?.length === 10 && data.game_state?.assigned) {
         setPlayers(data.game_state.players);
         setAssigned(data.game_state.assigned);
         setView("army-flow");
