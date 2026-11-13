@@ -219,3 +219,25 @@ body{font-family:"Vazirmatn","Noto Sans Arabic","Noto Naskh Arabic UI",Tahoma,sa
 .role-reveal-card.role-team-customer strong{color:#ffe0a8}
 .role-description{width:100%;display:grid;gap:5px}
 .role-description p{margin:0;color:#f0e7d5;font-size:11px;line-height:1.9;text-align:center}
+
+/* Secret Army game flow: narrator roster, emergency sequence, and turn records */
+.army-roster-list{display:grid;gap:8px;margin:12px 0}
+.army-roster-item{display:grid;gap:6px;padding:11px;border:1px solid #62543d;background:linear-gradient(120deg,#20231f,#171b1a)}
+.army-roster-item small{font:8px Georgia,serif;letter-spacing:1px;color:#b99b68}
+.army-roster-item strong{font-size:14px;color:#eee2c9}
+.army-roster-item>b{font-size:11px;color:#d1b27b}
+.army-roster-item ul{margin:0;padding:0 17px 0 0;color:#b8ad96;font-size:10px;line-height:1.9}
+.army-stage-card{display:grid;gap:10px;padding:17px 14px;border:1px solid #92764a;background:linear-gradient(145deg,#30291f,#191d1c);margin:14px 0}
+.army-stage-card>small{font:8px Georgia,serif;letter-spacing:1.2px;color:#b99b68}
+.army-stage-card h2{font-size:18px;color:#eee2c9;margin:0}
+.army-stage-card p{font-size:12px;line-height:2;color:#c6b99e;margin:0}
+.army-stage-player{display:block;padding:7px 9px;border-right:2px solid #b99b68;background:#171b19;color:#d8c8a5;font-size:10px}
+.army-turn-counters{display:flex;justify-content:space-around;gap:8px;padding:11px;border:1px solid #62543d;background:#191c1a;color:#d1b27b;font-size:10px;margin:12px 0}
+.army-log{display:grid;gap:7px;margin:14px 0;padding:12px;border:1px solid #5b4d35;background:#171b1a}
+.army-log h2{font-size:12px;color:#d2b57e;margin:0 0 3px}
+.army-log p,.army-log article{font-size:10px;line-height:1.9;color:#c2b69e;margin:0}
+.army-log article{padding-top:8px;border-top:1px solid #51452f}
+.army-log article>b{color:#d0b27a}
+.army-challenge-clock{display:flex;align-items:center;justify-content:center;gap:12px;padding:12px;border:1px solid #a94a4a;background:#351a1c;color:#f1c2bd}
+.army-challenge-clock b{font:36px Georgia,serif}
+.army-challenge-clock span{font-size:10px}
