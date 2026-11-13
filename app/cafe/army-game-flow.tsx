@@ -35,7 +35,9 @@ export default function ArmyGameFlow({ players, assigned, roleDetails }: Props) 
       return {role,player:matches[idx===0?0:idx===1?1:idx===2?0:1]||""};
     });
     return [
-      {title:"لایک‌های آغازین",instruction:"سرهنگ کسلر، خلبان و دکتر پاسگال به‌ترتیب لایک نشان بدهند.",players:[rolePlayer("سرهنگ کسلر"),rolePlayer("خلبان"),rolePlayer("دکتر پاسگال")]},
+      {title:"لایک سرهنگ کسلر",instruction:"سرهنگ کسلر لایک خود را نشان بدهد؛ سپس راوی تأیید کند.",players:[rolePlayer("سرهنگ کسلر")]},
+      {title:"لایک خلبان",instruction:"خلبان لایک خود را نشان بدهد؛ سپس راوی تأیید کند.",players:[rolePlayer("خلبان")]},
+      {title:"لایک دکتر پاسگال",instruction:"دکتر پاسگال لایک خود را نشان بدهد؛ سپس راوی تأیید کند.",players:[rolePlayer("دکتر پاسگال")]},
       {title:"بیداری کرتیس",instruction:"کرتیس بیدار شود و سه لایک را مشاهده کند.",players:[rolePlayer("کرتیس")]},
       {title:"بستن چشم‌های کرتیس",instruction:"پس از تأیید راوی، کرتیس چشم‌هایش را ببندد.",players:[rolePlayer("کرتیس")]},
       {title:"بیداری گشتاپو",instruction:"گشتاپوی ساده و راینهارت بیدار شوند؛ فقط لایک کسلر را ببینند و یکدیگر را بشناسند.",players:[rolePlayer("گشتاپو ساده"),rolePlayer("راینهارت")]},
