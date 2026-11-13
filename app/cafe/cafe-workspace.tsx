@@ -75,6 +75,24 @@ export default function CafeWorkspace({ gifted }: { gifted: boolean }) {
     return () => window.clearInterval(timer);
   }, [timerRunning, view]);
 
+
+
+  useEffect(() => {
+    if (view !== "army-setup" && view !== "army-deal") return;
+    const timer = window.setTimeout(async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      await supabase.from("army_game_saves").upsert({
+        user_id: user.id,
+        game_state: { workspace: { view, players, roleDeck, assigned, revealedRole, revealedPlayer } },
+        status: "active",
+        updated_at: new Date().toISOString()
+      }, { onConflict: "user_id" });
+    }, 450);
+    return () => window.clearTimeout(timer);
+  }, [view, players, roleDeck, assigned, revealedRole, revealedPlayer]);
+
   function openSection(label: string) {
     setNotice("بخش «" + label + "» در منوی گرداننده ثبت شد؛ برای فعال‌سازی آن باید روند اجرایی‌اش مشخص شود.");
   }
