@@ -273,3 +273,7 @@ body{font-family:"Vazirmatn","Noto Sans Arabic","Noto Naskh Arabic UI",Tahoma,sa
 .army-history-item>b{color:#d0b27a;font-size:12px}
 .army-history-item p{margin-top:6px}
 @media(max-width:360px){.army-action-selector{gap:4px}.army-action-tile{min-height:66px}.army-action-tile span{font-size:7px}.army-utility-bar button{font-size:8px}}
+
+.army-turn-clock{display:flex;align-items:center;justify-content:center;gap:8px;margin:12px 0;padding:10px;border:1px solid #806a47;background:linear-gradient(120deg,#211f1a,#111615);color:#d4c095}
+.army-turn-clock small,.army-turn-clock span{font-size:10px;color:#b9a98a}
+.army-turn-clock strong{font-size:26px;line-height:1;color:#e4c47d;font-variant-numeric:tabular-nums;min-width:2ch;text-align:center}
