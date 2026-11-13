@@ -19,7 +19,7 @@ export default function ArmyGameFlow({players,assigned,roleDetails}:Props){
  const [loaded,setLoaded]=useState(false),[saveError,setSaveError]=useState("");
  const [stage,setStage]=useState<Stage>("roster"),[introSeconds,setIntroSeconds]=useState<30|45>(30),[introIndex,setIntroIndex]=useState(0),[timeLeft,setTimeLeft]=useState(30),[running,setRunning]=useState(false);
  const [emergencyIndex,setEmergencyIndex]=useState(0),[starter,setStarter]=useState(""),[turn,setTurn]=useState(1),[order,setOrder]=useState<string[]>([]),[speaker,setSpeaker]=useState(0);
- const [shots,setShots]=useState(0),[specials,setSpecials]=useState(0),[challengeUsed,setChallengeUsed]=useState<string[]>([]),[spent,setSpent]=useState<Record<string,string[]>>({});
+ const [shots,setShots]=useState(0),[specials,setSpecials]=useState(0),[challengeUsed,setChallengeUsed]=useState<string[]>([]),[challengedPlayers,setChallengedPlayers]=useState<string[]>([]),[spent,setSpent]=useState<Record<string,string[]>>({});
  const [challengeLeft,setChallengeLeft]=useState(15),[challengeActive,setChallengeActive]=useState(false);
  const [logs,setLogs]=useState<Log[]>([]),[history,setHistory]=useState<{turn:number;entries:string[]}[]>([]);
  const [guns,setGuns]=useState<Record<string,Gun>>({}),[narratorGuns,setNarratorGuns]=useState(1),[sides,setSides]=useState<Record<string,string>>({});
