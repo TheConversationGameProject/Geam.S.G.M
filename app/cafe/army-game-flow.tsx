@@ -1,130 +1,112 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 type RoleDetail = { team: string; description: string[] };
 type Props = { players: string[]; assigned: Record<string,string>; roleDetails: Record<string,RoleDetail> };
+type Stage = "roster"|"intro"|"emergency"|"turn-setup"|"turn";
+type Gun = "real"|"fake"|"burned"|"none";
+type Log = {turn:number;text:string};
+type Save = Record<string, any>;
 
-export default function ArmyGameFlow({ players, assigned, roleDetails }: Props) {
-  const [stage,setStage]=useState<"roster"|"intro"|"emergency"|"turn-setup"|"turn">("roster");
-  const [introSeconds,setIntroSeconds]=useState<30|45>(30);
-  const [introIndex,setIntroIndex]=useState(0);
-  const [timeLeft,setTimeLeft]=useState(30);
-  const [running,setRunning]=useState(false);
-  const [emergencyIndex,setEmergencyIndex]=useState(0);
-  const [starter,setStarter]=useState("");
-  const [turn,setTurn]=useState(1);
-  const [order,setOrder]=useState<string[]>([]);
-  const [speaker,setSpeaker]=useState(0);
-  const [shots,setShots]=useState(0);
-  const [specials,setSpecials]=useState(0);
-  const [challengeUsed,setChallengeUsed]=useState<string[]>([]);
-  const [spent,setSpent]=useState<Record<string,string[]>>({});
-  const [actor,setActor]=useState("");
-  const [target,setTarget]=useState("");
-  const [action,setAction]=useState<"shot"|"special"|"challenge">("shot");
-  const [burn,setBurn]=useState<"shot"|"special">("shot");
-  const [challengeLeft,setChallengeLeft]=useState(15);
-  const [challengeActive,setChallengeActive]=useState(false);
-  const [logs,setLogs]=useState<{turn:number;text:string}[]>([]);
-  const [history,setHistory]=useState<{turn:number;entries:string[]}[]>([]);
+const INITIAL_ARMED = ["کرتیس","مأمور نجات","سرهنگ کسلر","راینهارت","گشتاپو ساده"];
+const TEAM:Record<string,string>={"کرتیس":"partisan","خلبان":"partisan","مأمور نجات":"partisan","دکتر پاسگال":"partisan","سرهنگ کسلر":"gestapo","راینهارت":"gestapo","گشتاپو ساده":"gestapo","مشتری":"customer"};
+const EMERGENCY_ROLES=["مشتری","مشتری","مأمور نجات","مأمور نجات"];
+const emptyGun=(role:string):Gun=>INITIAL_ARMED.includes(role)?"real":"none";
 
-  const rolePlayer=(role:string)=>players.find(p=>assigned[p]===role)||"";
-  const emergencySteps=useMemo(()=>{
-    const remainder=["مأمور نجات","مأمور نجات","مشتری","مشتری"].map((role,idx)=>{
-      const matches=players.filter(p=>assigned[p]===role);
-      return {role,player:matches[idx===0?0:idx===1?1:idx===2?0:1]||""};
-    });
-    return [
-      {title:"لایک سرهنگ کسلر",instruction:"سرهنگ کسلر لایک خود را نشان بدهد؛ سپس راوی تأیید کند.",players:[rolePlayer("سرهنگ کسلر")]},
-      {title:"لایک خلبان",instruction:"خلبان لایک خود را نشان بدهد؛ سپس راوی تأیید کند.",players:[rolePlayer("خلبان")]},
-      {title:"لایک دکتر پاسگال",instruction:"دکتر پاسگال لایک خود را نشان بدهد؛ سپس راوی تأیید کند.",players:[rolePlayer("دکتر پاسگال")]},
-      {title:"بیداری کرتیس",instruction:"کرتیس بیدار شود و سه لایک را مشاهده کند.",players:[rolePlayer("کرتیس")]},
-      {title:"بستن چشم‌های کرتیس",instruction:"پس از تأیید راوی، کرتیس چشم‌هایش را ببندد.",players:[rolePlayer("کرتیس")]},
-      {title:"بیداری گشتاپو",instruction:"گشتاپوی ساده و راینهارت بیدار شوند؛ فقط لایک کسلر را ببینند و یکدیگر را بشناسند.",players:[rolePlayer("گشتاپو ساده"),rolePlayer("راینهارت")]},
-      {title:"بستن چشم‌های گشتاپو",instruction:"پس از تأیید راوی، گشتاپوی ساده و راینهارت چشم‌هایشان را ببندند.",players:[rolePlayer("گشتاپو ساده"),rolePlayer("راینهارت")]},
-      {title:"انداختن لایک کسلر",instruction:"سرهنگ کسلر لایک خود را بیندازد.",players:[rolePlayer("سرهنگ کسلر")]},
-      ...remainder.map(x=>({title:"لایک نقش باقی‌مانده",instruction:"نقش «"+x.role+"» بدون باز کردن چشم‌ها فقط لایک بدهد.",players:[x.player]}))
-    ].map(x=>({...x,players:x.players.filter(Boolean)}));
-  },[players,assigned]);
+export default function ArmyGameFlow({players,assigned,roleDetails}:Props){
+ const supabase=useMemo(()=>createClient(),[]);
+ const [loaded,setLoaded]=useState(false),[saveError,setSaveError]=useState("");
+ const [stage,setStage]=useState<Stage>("roster"),[introSeconds,setIntroSeconds]=useState<30|45>(30),[introIndex,setIntroIndex]=useState(0),[timeLeft,setTimeLeft]=useState(30),[running,setRunning]=useState(false);
+ const [emergencyIndex,setEmergencyIndex]=useState(0),[starter,setStarter]=useState(""),[turn,setTurn]=useState(1),[order,setOrder]=useState<string[]>([]),[speaker,setSpeaker]=useState(0);
+ const [shots,setShots]=useState(0),[specials,setSpecials]=useState(0),[challengeUsed,setChallengeUsed]=useState<string[]>([]),[spent,setSpent]=useState<Record<string,string[]>>({});
+ const [challengeLeft,setChallengeLeft]=useState(15),[challengeActive,setChallengeActive]=useState(false);
+ const [logs,setLogs]=useState<Log[]>([]),[history,setHistory]=useState<{turn:number;entries:string[]}[]>([]);
+ const [guns,setGuns]=useState<Record<string,Gun>>({}),[narratorGuns,setNarratorGuns]=useState(1),[sides,setSides]=useState<Record<string,string>>({});
+ const [specialInvites,setSpecialInvites]=useState<string[]>([]),[room,setRoom]=useState<{host:string;guest:string;seconds:number;running:boolean;hostClaim:string;guestClaim:string;guestSide:string;trade:boolean}|null>(null);
+ const [roomPairByTurn,setRoomPairByTurn]=useState<Record<number,string[]>>({});
+ const [target,setTarget]=useState(""),[burn,setBurn]=useState<"shot"|"special">("shot"),[roomGuest,setRoomGuest]=useState(""),[guestClaim,setGuestClaim]=useState("مشتری"),[guestSide,setGuestSide]=useState(""),[tradeRequested,setTradeRequested]=useState(false);
+ const [kickTarget,setKickTarget]=useState(""),[kickReason,setKickReason]=useState("افشای نقش"),[winner,setWinner]=useState(""),[ended,setEnded]=useState(false);
+ const [ryneTarget,setRyneTarget]=useState(""),[ryneClaim,setRyneClaim]=useState("");
+ const rolePlayer=(role:string)=>players.find(p=>assigned[p]===role)||"";
+ const activePlayers=players.filter(p=>!logs.some(x=>x.text.startsWith("اخراج: "+p+" ")));
+ const current=order[speaker]||"";
+ const currentRole=assigned[current]||"";
+ const currentGun=guns[current]||"none";
+ const isRoomBlocked=(a:string,b:string)=> (roomPairByTurn[turn]||[]).includes(a)&&(roomPairByTurn[turn]||[]).includes(b);
+ const emergencySteps=useMemo(()=>{
+  const used=new Set<string>();
+  const rem=EMERGENCY_ROLES.map(role=>{const p=players.find(x=>assigned[x]===role&&!used.has(x))||"";if(p)used.add(p);return {role,player:p};});
+  return [
+   {title:"لایک سرهنگ کسلر",instruction:"سرهنگ کسلر لایک خود را نشان بدهد؛ راوی تأیید کند.",players:[rolePlayer("سرهنگ کسلر")]},
+   {title:"لایک خلبان",instruction:"خلبان لایک خود را نشان بدهد؛ راوی تأیید کند.",players:[rolePlayer("خلبان")]},
+   {title:"لایک دکتر پاسگال",instruction:"دکتر پاسگال لایک خود را نشان بدهد؛ راوی تأیید کند.",players:[rolePlayer("دکتر پاسگال")]},
+   {title:"بیداری کرتیس",instruction:"کرتیس بیدار شود و سه لایک را ببیند.",players:[rolePlayer("کرتیس")]},
+   {title:"بستن چشم‌های کرتیس",instruction:"پس از تأیید راوی، کرتیس چشم‌هایش را ببندد.",players:[rolePlayer("کرتیس")]},
+   {title:"بیداری گشتاپو",instruction:"گشتاپوی ساده و راینهارت بیدار شوند؛ فقط لایک کسلر را ببینند و یکدیگر را بشناسند.",players:[rolePlayer("گشتاپو ساده"),rolePlayer("راینهارت")]},
+   {title:"بستن چشم‌های گشتاپو",instruction:"پس از تأیید راوی، گشتاپوی ساده و راینهارت چشم‌هایشان را ببندند.",players:[rolePlayer("گشتاپو ساده"),rolePlayer("راینهارت")]},
+   {title:"انداختن لایک کسلر",instruction:"سرهنگ کسلر لایک خود را بیندازد.",players:[rolePlayer("سرهنگ کسلر")]},
+   ...rem.map(x=>({title:"لایک نقش باقی‌مانده",instruction:"نقش "+x.role+" بدون باز کردن چشم‌ها فقط لایک بدهد.",players:[x.player]}))
+  ].map(x=>({...x,players:x.players.filter(Boolean)}));
+ },[players,assigned]);
 
-  useEffect(()=>{
-    if(!running||stage!=="intro")return;
-    const id=window.setInterval(()=>setTimeLeft(v=>{if(v<=1){window.clearInterval(id);setRunning(false);return 0;}return v-1;}),1000);
-    return ()=>window.clearInterval(id);
-  },[running,stage]);
-  useEffect(()=>{
-    if(!challengeActive)return;
-    const id=window.setInterval(()=>setChallengeLeft(v=>{if(v<=1){window.clearInterval(id);setChallengeActive(false);return 0;}return v-1;}),1000);
-    return ()=>window.clearInterval(id);
-  },[challengeActive]);
-
-  function nextIntro(){
-    setRunning(false);
-    if(introIndex<9){setIntroIndex(v=>v+1);setTimeLeft(introSeconds);}
-    else setStage("emergency");
+ const snapshot=():Save=>({stage,introSeconds,introIndex,timeLeft,running:false,emergencyIndex,starter,turn,order,speaker,shots,specials,challengeUsed,spent,challengeLeft,challengeActive:false,logs,history,guns,narratorGuns,sides,specialInvites,room:room?{...room,running:false}:null,roomPairByTurn,ended,winner});
+ useEffect(()=>{let alive=true;(async()=>{const {data:{user}}=await supabase.auth.getUser();if(!user)return;const {data,error}=await supabase.from("army_game_saves").select("game_state,status").eq("user_id",user.id).maybeSingle();if(!alive)return;if(error){setSaveError("بازی ذخیره‌شده بارگذاری نشد.");setLoaded(true);return;}if(data?.status==="active"&&data.game_state){const s=data.game_state as Save;setStage(s.stage||"roster");setIntroSeconds(s.introSeconds||30);setIntroIndex(s.introIndex||0);setTimeLeft(s.timeLeft??30);setRunning(false);setEmergencyIndex(s.emergencyIndex||0);setStarter(s.starter||"");setTurn(s.turn||1);setOrder(s.order||[]);setSpeaker(s.speaker||0);setShots(s.shots||0);setSpecials(s.specials||0);setChallengeUsed(s.challengeUsed||[]);setSpent(s.spent||{});setChallengeLeft(s.challengeLeft??15);setChallengeActive(false);setLogs(s.logs||[]);setHistory(s.history||[]);setGuns(s.guns||Object.fromEntries(players.map(p=>[p,emptyGun(assigned[p])])));setNarratorGuns(s.narratorGuns??1);setSides(s.sides||{});setSpecialInvites(s.specialInvites||[]);setRoom(s.room?{...s.room,running:false}:null);setRoomPairByTurn(s.roomPairByTurn||{});setEnded(Boolean(s.ended));setWinner(s.winner||"");}else{setGuns(Object.fromEntries(players.map(p=>[p,emptyGun(assigned[p])])));}setLoaded(true);})();return()=>{alive=false};},[supabase,players,assigned]);
+ useEffect(()=>{if(!loaded)return;let cancelled=false;(async()=>{const {data:{user}}=await supabase.auth.getUser();if(!user||cancelled)return;const {error}=await supabase.from("army_game_saves").upsert({user_id:user.id,game_state:snapshot(),status:ended?"completed":"active",updated_at:new Date().toISOString()},{onConflict:"user_id"});if(error)setSaveError("ذخیره بازی انجام نشد؛ اتصال اینترنت را بررسی کن.");else setSaveError("");})();return()=>{cancelled=true};},[loaded,stage,introSeconds,introIndex,timeLeft,emergencyIndex,starter,turn,order,speaker,shots,specials,challengeUsed,spent,challengeLeft,logs,history,guns,narratorGuns,sides,specialInvites,room,roomPairByTurn,ended,winner]);
+ useEffect(()=>{if(!running||stage!=="intro"||document.visibilityState!=="visible")return;const id=window.setInterval(()=>setTimeLeft(v=>{if(v<=1){setRunning(false);return 0;}return v-1;}),1000);return()=>window.clearInterval(id);},[running,stage]);
+ useEffect(()=>{if(!room?.running||document.visibilityState!=="visible")return;const id=window.setInterval(()=>setRoom(r=>r?({...r,seconds:Math.max(0,r.seconds-1)}):r),1000);return()=>window.clearInterval(id);},[room?.running]);
+ useEffect(()=>{if(!challengeActive||document.visibilityState!=="visible")return;const id=window.setInterval(()=>setChallengeLeft(v=>Math.max(0,v-1)),1000);return()=>window.clearInterval(id);},[challengeActive]);
+ useEffect(()=>{const pause=()=>{if(document.visibilityState!=="visible"){setRunning(false);setRoom(r=>r?({...r,running:false}):r);setChallengeActive(false);}};document.addEventListener("visibilitychange",pause);return()=>document.removeEventListener("visibilitychange",pause);},[]);
+ if(!loaded)return <section className="command-content army-content"><p className="army-hint">در حال بازیابی پرونده عملیاتی...</p></section>;
+ function addLog(text:string){setLogs(p=>[...p,{turn,text}]);}
+ function nextIntro(){setRunning(false);if(introIndex<9){setIntroIndex(v=>v+1);setTimeLeft(introSeconds);}else setStage("emergency");}
+ function nextEmergency(){if(emergencyIndex<emergencySteps.length-1)setEmergencyIndex(v=>v+1);else setStage("turn-setup");}
+ function startTurn(){const i=players.indexOf(starter);if(i<0)return;setOrder([...players.slice(i),...players.slice(0,i)]);setSpeaker(0);setTurn(1);setStage("turn");}
+ function finishTurn(){setHistory(p=>[...p,{turn,entries:logs.filter(x=>x.turn===turn).map(x=>x.text)}]);setTurn(v=>v+1);setShots(0);setSpecials(0);setChallengeUsed([]);setSpent({});setSpeaker(0);}
+ function challenge(){if(!target||challengeUsed.includes(current)||isRoomBlocked(current,target))return;setChallengeUsed(p=>[...p,current]);setSpent(p=>({...p,[current]:[...(p[current]||[]),burn]}));if(burn==="shot"&&currentGun==="real")setGuns(p=>({...p,[current]:"burned"}));addLog(current+" بازیکن "+target+" را به چالش کشید؛ قابلیت "+(burn==="shot"?"اسلحه":"گفت‌وگوی ویژه")+" او سوخت.");setChallengeLeft(15);setChallengeActive(true);const idx=order.indexOf(target);if(idx>=0)setSpeaker(idx);setTarget("");}
+ function useShot(){if(currentGun!=="real"||shots>=2||isRoomBlocked(current,target)||!target)return;setShots(v=>v+1);setGuns(p=>({...p,[current]:"burned"}));addLog(current+" به "+target+" شلیک کرد؛ اسلحه سوخت.");setTarget("");}
+ function useSpecial(){if(specials>=2||specialInvites.includes(current)||!roomGuest||isRoomBlocked(current,roomGuest))return;setSpecials(v=>v+1);setSpecialInvites(p=>[...p,current]);setRoom({host:current,guest:roomGuest,seconds:60,running:false,hostClaim:"",guestClaim:"",guestSide:"",trade:false});setRoomGuest("");}
+ function resolveTrade(){if(!room)return;const host=room.host,guest=room.guest,hr=assigned[host],gr=assigned[guest],claim=room.guestClaim;let result="امکان تبادل اسلحه بین شما وجود ندارد.";let nextGuns={...guns},nextSupply=narratorGuns,nextSides={...sides};
+  const hasSupply=narratorGuns>0;
+  const blocked=hr==="دکتر پاسگال"||gr==="دکتر پاسگال"||(hr==="خلبان"&&(gr==="مشتری"||gr==="گشتاپو ساده"||gr==="راینهارت"))||(gr==="خلبان"&&(hr==="مشتری"||hr==="گشتاپو ساده"||hr==="راینهارت"))||(hr==="مشتری"&&gr==="مشتری")||(hr==="سرهنگ کسلر"&&room.hostClaim==="مشتری"&&gr==="مشتری");
+  if(!blocked&&hasSupply){
+   if(hr==="کرتیس"&&gr==="مشتری"){nextGuns[guest]="real";nextSupply--;nextSides[guest]="partisan";result="تبادل اسلحه واقعی موفق بود؛ مشتری به تیم پارتیزان پیوست.";}
+   else if(hr==="مأمور نجات"&&gr==="سرهنگ کسلر"&&claim==="مشتری"){if(guns[guest]==="real"){result="تبادل اسلحه سوری موفق بود؛ اسلحه واقعی جابه‌جا نشد.";} }
+   else if((hr==="گشتاپو ساده"||hr==="راینهارت"||hr==="سرهنگ کسلر")&&gr==="مشتری"){nextGuns[guest]="real";nextSupply--;nextSides[guest]="gestapo";result="تبادل اسلحه واقعی موفق بود؛ مشتری به تیم گشتاپو پیوست.";}
+   else if(hr==="سرهنگ کسلر"&&gr==="مأمور نجات"&&(claim==="خلبان"||claim==="مشتری")&&guns[host]==="real"){result="تبادل اسلحه سوری موفق بود؛ اسلحه واقعی جابه‌جا نشد.";}
   }
-  function nextEmergency(){
-    if(emergencyIndex<emergencySteps.length-1)setEmergencyIndex(v=>v+1);
-    else setStage("turn-setup");
-  }
-  function startTurn(){
-    const i=players.indexOf(starter);if(i<0)return;
-    setOrder([...players.slice(i),...players.slice(0,i)]);setSpeaker(0);setTurn(1);setStage("turn");
-  }
-  function addAction(){
-    if(!actor||!target)return;
-    const used=spent[actor]||[];
-    if(action==="shot"&&(shots>=2||used.includes("shot")))return;
-    if(action==="special"&&(specials>=2||used.includes("special")))return;
-    if(action==="challenge"&&challengeUsed.includes(actor))return;
-    const text=action==="shot"?actor+" به "+target+" شلیک کرد.":action==="special"?actor+" گفت‌وگوی ویژه با "+target+" انجام داد.":actor+" بازیکن "+target+" را به چالش کشید؛ ۱۵ ثانیه.";
-    if(action==="shot"){setShots(v=>v+1);setSpent(p=>({...p,[actor]:[...(p[actor]||[]),"shot"]}));}
-    if(action==="special"){setSpecials(v=>v+1);setSpent(p=>({...p,[actor]:[...(p[actor]||[]),"special"]}));}
-    if(action==="challenge"){setChallengeUsed(p=>[...p,actor]);setSpent(p=>({...p,[actor]:[...(p[actor]||[]),burn]}));setChallengeLeft(15);setChallengeActive(true);}
-    setLogs(p=>[...p,{turn,text}]);setActor("");setTarget("");
-  }
-  function closeTurn(){
-    setHistory(p=>[...p,{turn,entries:logs.filter(x=>x.turn===turn).map(x=>x.text)}]);
-    setTurn(v=>v+1);setShots(0);setSpecials(0);setChallengeUsed([]);setSpent({});setSpeaker(0);
-  }
-
-  return <div className="army-flow">
-    {stage==="roster"&&<section className="command-content army-content">
-      <div className="command-heading"><div><p className="dispatch-overline">SECRET ARMY · ROSTER</p><h1>فهرست <em>بازیکنان</em></h1><p>نقش‌ها و قابلیت‌ها برای راوی</p></div><div className="command-crest">10<span>ROSTER</span></div></div>
-      <div className="army-roster-list">{players.map((p,i)=><article className="army-roster-item" key={p}><small>{String(i+1).padStart(2,"0")} / PLAYER</small><strong>{p}</strong><b>{assigned[p]}</b><ul>{(roleDetails[assigned[p]]?.description||[]).map((line,j)=><li key={j}>{line}</li>)}</ul></article>)}</div>
-      <button className="army-primary-button" onClick={()=>{setTimeLeft(introSeconds);setStage("intro");}}>شروع ترن معارفه <span>←</span></button>
-    </section>}
-    {stage==="intro"&&<section className="command-content army-content">
-      <div className="command-heading"><div><p className="dispatch-overline">SECRET ARMY · INTRODUCTION</p><h1>ترن <em>معارفه</em></h1><p>بدون چالش و بدون استفاده از قابلیت‌ها</p></div><div className="command-crest">01<span>INTRO</span></div></div>
-      <div className="intro-duration-control"><span>زمان صحبت هر بازیکن</span><div><button className={introSeconds===30?"selected":""} onClick={()=>{setIntroSeconds(30);setTimeLeft(30);setRunning(false);}}>۳۰ ثانیه</button><button className={introSeconds===45?"selected":""} onClick={()=>{setIntroSeconds(45);setTimeLeft(45);setRunning(false);}}>۴۵ ثانیه</button></div></div>
-      <div className="intro-player-card"><small>نوبت معرفی · بازیکن {introIndex+1} از ۱۰</small><strong>{players[introIndex]}</strong><div className={"intro-countdown "+(timeLeft===0?"time-finished":"")}>{timeLeft}</div><span>{timeLeft===0?"زمان این بازیکن تمام شد":"زمان باقی‌مانده برای صحبت"}</span></div>
-      <div className="intro-timer-actions"><button className="army-primary-button" disabled={timeLeft===0} onClick={()=>setRunning(v=>!v)}>{running?"توقف زمان":"شروع زمان"} <span>◷</span></button><button className="intro-reset-button" onClick={()=>{setRunning(false);setTimeLeft(introSeconds);}}>شروع مجدد زمان</button></div>
-      <button className="army-primary-button intro-next-button" onClick={nextIntro}>{introIndex===9?"پایان ترن معارفه":"بازیکن بعدی"} <span>←</span></button>
-    </section>}
-    {stage==="emergency"&&<section className="command-content army-content">
-      <div className="command-heading"><div><p className="dispatch-overline">SECRET ARMY · EMERGENCY</p><h1>وضعیت <em>اضطراری</em></h1><p>مرحله {emergencyIndex+1} از {emergencySteps.length}</p></div><div className="command-crest">02<span>CHECK</span></div></div>
-      <div className="army-stage-card"><small>دستور مرحله‌ای برای راوی</small><h2>{emergencySteps[emergencyIndex].title}</h2><p>{emergencySteps[emergencyIndex].instruction}</p>{emergencySteps[emergencyIndex].players.map(p=><span className="army-stage-player" key={p}>{p} · {assigned[p]}</span>)}</div>
-      <p className="army-hint">برنامه لایک را تشخیص نمی‌دهد؛ فقط پس از تأیید راوی جلو می‌رود.</p>
-      <button className="army-primary-button" onClick={nextEmergency}>{emergencyIndex===emergencySteps.length-1?"تأیید و ورود به ترن اول":"تأیید راوی و مرحله بعد"} <span>←</span></button>
-    </section>}
-    {stage==="turn-setup"&&<section className="command-content army-content">
-      <div className="command-heading"><div><p className="dispatch-overline">SECRET ARMY · FIRST TURN</p><h1>شروع <em>ترن اول</em></h1><p>شروع‌کننده صحبت را انتخاب کن.</p></div><div className="command-crest">01<span>TURN</span></div></div>
-      <label className="army-select-label">بازیکن شروع‌کننده<select value={starter} onChange={e=>setStarter(e.target.value)}><option value="">انتخاب بازیکن</option>{players.map(p=><option key={p}>{p}</option>)}</select></label>
-      <button className="army-primary-button" disabled={!starter} onClick={startTurn}>شروع ترن اول <span>←</span></button>
-    </section>}
-    {stage==="turn"&&<section className="command-content army-content">
-      <div className="command-heading"><div><p className="dispatch-overline">SECRET ARMY · LIVE TURN</p><h1>ترن <em>{turn}</em></h1><p>ثبت اطلاعات ترن جاری و سوابق</p></div><div className="command-crest">{String(turn).padStart(2,"0")}<span>TURN</span></div></div>
-      <div className="army-stage-card"><small>نوبت صحبت</small><h2>{order[speaker]||"—"}</h2><button className="intro-reset-button" onClick={()=>setSpeaker(v=>(v+1)%order.length)}>نفر بعدی برای صحبت</button></div>
-      <div className="army-turn-counters"><span>شلیک {shots}/۲</span><span>گفت‌وگوی ویژه {specials}/۲</span></div>
-      <label className="army-select-label">بازیکن اجراکننده<select value={actor} onChange={e=>setActor(e.target.value)}><option value="">انتخاب بازیکن</option>{players.map(p=><option key={p}>{p}</option>)}</select></label>
-      <label className="army-select-label">اقدام<select value={action} onChange={e=>setAction(e.target.value as "shot"|"special"|"challenge")}><option value="shot">شلیک</option><option value="special">گفت‌وگوی ویژه</option><option value="challenge">چالش ۱۵ ثانیه‌ای</option></select></label>
-      <label className="army-select-label">بازیکن هدف<select value={target} onChange={e=>setTarget(e.target.value)}><option value="">انتخاب هدف</option>{players.filter(p=>p!==actor).map(p=><option key={p}>{p}</option>)}</select></label>
-      {action==="challenge"&&<label className="army-select-label">قابلیتی که برای همین بازیکن می‌سوزد<select value={burn} onChange={e=>setBurn(e.target.value as "shot"|"special")}><option value="shot">شلیک</option><option value="special">گفت‌وگوی ویژه</option></select></label>}
-      <button className="army-primary-button" disabled={!actor||!target||(action==="shot"&&(shots>=2||(spent[actor]||[]).includes("shot")))||(action==="special"&&(specials>=2||(spent[actor]||[]).includes("special")))||(action==="challenge"&&challengeUsed.includes(actor))} onClick={addAction}>ثبت اقدام <span>＋</span></button>
-      {challengeActive&&<div className="army-challenge-clock"><b>{challengeLeft}</b><span>ثانیه باقی‌مانده چالش</span></div>}
-      <div className="army-log"><h2>گزارش ترن جاری</h2>{logs.filter(x=>x.turn===turn).map((x,i)=><p key={i}>{i+1}. {x.text}</p>)}</div>
-      <button className="army-primary-button" onClick={closeTurn}>پایان ترن و ثبت سوابق <span>✓</span></button>
-      <div className="army-log"><h2>ترن‌های قبلی</h2>{history.map(h=><article key={h.turn}><b>ترن {h.turn}</b>{h.entries.map((x,i)=><p key={i}>{x}</p>)}</article>)}</div>
-    </section>}
-  </div>;
+  setGuns(nextGuns);setNarratorGuns(nextSupply);setSides(nextSides);addLog("۰۹۰۰: "+host+" / "+guest+" — "+result);setRoom(r=>r?({...r,trade:false}):r);
+ }
+ function closeRoom(){if(!room)return;setRoomPairByTurn(p=>({...p,[turn]:[...new Set([...(p[turn]||[]),room.host,room.guest])]}));addLog("گفت‌وگوی ۰۹۰۰ بین "+room.host+" و "+room.guest+" با تأیید راوی بسته شد.");setRoom(null);}
+ function kick(){if(!kickTarget)return;const gun=guns[kickTarget];if(gun==="real")setNarratorGuns(v=>v+1);setGuns(p=>({...p,[kickTarget]:"none"}));addLog("اخراج: "+kickTarget+" — "+kickReason+(gun==="real"?"؛ اسلحه استفاده‌نشده به راوی برگشت.":""));setKickTarget("");}
+ function startRoomTrade(){if(!room)return;setRoom(r=>r?({...r,trade:true}):r);}
+ const teamOf=(p:string)=>sides[p]||TEAM[assigned[p]]||"customer";
+ return <div className="army-flow">
+ {stage==="roster"&&<section className="command-content army-content"><div className="command-heading"><div><p className="dispatch-overline">SECRET ARMY · ROSTER</p><h1>فهرست <em>بازیکنان</em></h1><p>نام و نقش بازیکنان</p></div><div className="command-crest">10<span>ROSTER</span></div></div><div className="army-roster-list">{players.map((p,i)=><article className="army-roster-item" key={p}><small>{String(i+1).padStart(2,"0")} / PLAYER</small><strong>{p}</strong><b>{assigned[p]}</b></article>)}</div><button className="army-primary-button" onClick={()=>setStage("intro")}>شروع ترن معارفه <span>←</span></button></section>}
+ {stage==="intro"&&<section className="command-content army-content"><div className="command-heading"><div><p className="dispatch-overline">SECRET ARMY · INTRODUCTION</p><h1>ترن <em>معارفه</em></h1><p>بدون چالش و قابلیت</p></div></div><div className="intro-duration-control"><span>زمان صحبت</span><div><button className={introSeconds===30?"selected":""} onClick={()=>{setIntroSeconds(30);setTimeLeft(30);setRunning(false);}}>۳۰ ثانیه</button><button className={introSeconds===45?"selected":""} onClick={()=>{setIntroSeconds(45);setTimeLeft(45);setRunning(false);}}>۴۵ ثانیه</button></div></div><div className="intro-player-card"><small>بازیکن {introIndex+1} از ۱۰</small><strong>{players[introIndex]}</strong><div className="intro-countdown">{timeLeft}</div></div><button className="army-primary-button" disabled={timeLeft===0} onClick={()=>setRunning(v=>!v)}>{running?"توقف زمان":"شروع زمان"}</button><button className="army-primary-button" onClick={nextIntro}>{introIndex===9?"پایان معارفه":"بازیکن بعدی"}</button></section>}
+ {stage==="emergency"&&<section className="command-content army-content"><div className="command-heading"><div><p className="dispatch-overline">SECRET ARMY · EMERGENCY</p><h1>وضعیت <em>اضطراری</em></h1><p>مرحله {emergencyIndex+1} از {emergencySteps.length}</p></div></div><div className="army-stage-card"><h2>{emergencySteps[emergencyIndex].title}</h2><p>{emergencySteps[emergencyIndex].instruction}</p>{emergencySteps[emergencyIndex].players.map(p=><span className="army-stage-player" key={p}>{p} · {assigned[p]}</span>)}</div><button className="army-primary-button" onClick={nextEmergency}>تأیید راوی و مرحله بعد</button></section>}
+ {stage==="turn-setup"&&<section className="command-content army-content"><div className="command-heading"><div><p className="dispatch-overline">SECRET ARMY · FIRST TURN</p><h1>شروع <em>ترن اول</em></h1></div></div><label className="army-select-label">بازیکن شروع‌کننده<select value={starter} onChange={e=>setStarter(e.target.value)}><option value="">انتخاب بازیکن</option>{activePlayers.map(p=><option key={p}>{p}</option>)}</select></label><button className="army-primary-button" disabled={!starter} onClick={startTurn}>شروع ترن اول</button></section>}
+ {stage==="turn"&&<section className="command-content army-content"><div className="command-heading"><div><p className="dispatch-overline">SECRET ARMY · LIVE TURN</p><h1>ترن <em>{turn}</em></h1><p>وضعیت تاریخی: گشتاپوی آلمان / پارتیزان‌های انگلیسی</p></div></div>
+ <div className="army-stage-card"><small>بازیکن جاری</small><h2>{current||"—"}</h2><p>نقش: {currentRole}</p><p>جلیقه ضدگلوله: {["سرهنگ کسلر","خلبان"].includes(currentRole)?"فعال":"ندارد"}</p><p>جلیقه ضد رأی: {currentRole==="خلبان"?"فعال":"ندارد"}</p><p>اسلحه: {currentGun==="real"?"دارد":currentGun==="burned"?"سوخته و غیرقابل استفاده":"ندارد"}</p><p>ساید: {teamOf(current)==="partisan"?"پارتیزان":teamOf(current)==="gestapo"?"گشتاپو":"بی‌طرف"}</p><button className="intro-reset-button" onClick={()=>setSpeaker(v=>(v+1)%Math.max(order.length,1))}>نفر بعدی برای صحبت</button></div>
+ <div className="army-turn-counters"><span>شلیک ترن {shots}/۲</span><span>گفت‌وگوی ویژه {specials}/۲</span><span>موجودی راوی: {narratorGuns}</span></div>
+ <label className="army-select-label">هدف<select value={target} onChange={e=>setTarget(e.target.value)}><option value="">انتخاب هدف</option>{activePlayers.filter(p=>p!==current&&!isRoomBlocked(current,p)).map(p=><option key={p}>{p}</option>)}</select></label>
+ <button className="army-primary-button" disabled={!target||currentGun!=="real"||shots>=2||isRoomBlocked(current,target)} onClick={useShot}>شلیک با اسلحه <span>⌖</span></button>
+ <label className="army-select-label">قابلیت سوخته در چالش<select value={burn} onChange={e=>setBurn(e.target.value as "shot"|"special")}><option value="shot">اسلحه / شلیک</option><option value="special">گفت‌وگوی ویژه</option></select></label>
+ <button className="army-primary-button" disabled={!target||challengeUsed.includes(current)||isRoomBlocked(current,target)} onClick={challenge}>چالش ۱۵ ثانیه‌ای <span>!</span></button>{challengeActive&&<div className="army-challenge-clock"><b>{challengeLeft}</b><span>ثانیه چالش</span></div>}
+ <label className="army-select-label">دعوت به ۰۹۰۰<select value={roomGuest} onChange={e=>setRoomGuest(e.target.value)}><option value="">انتخاب میهمان</option>{activePlayers.filter(p=>p!==current&&!specialInvites.includes(p)&&!isRoomBlocked(current,p)).map(p=><option key={p}>{p}</option>)}</select></label><button className="army-primary-button" disabled={!roomGuest||specialInvites.includes(current)||specials>=2} onClick={useSpecial}>دعوت و ورود به ۰۹۰۰ <span>↔</span></button>
+ <label className="army-select-label">اخراج بازیکن<select value={kickTarget} onChange={e=>setKickTarget(e.target.value)}><option value="">انتخاب بازیکن</option>{activePlayers.map(p=><option key={p}>{p}</option>)}</select></label><label className="army-select-label">علت اخراج<select value={kickReason} onChange={e=>setKickReason(e.target.value)}><option>افشای نقش</option><option>کیک انضباطی</option><option>سایر موارد</option></select></label><button className="army-primary-button" disabled={!kickTarget} onClick={kick}>ثبت اخراج بازیکن</button>
+ <label className="army-select-label">بازیکن حذف‌شده با حدس نقش راینهارت<select value={ryneTarget} onChange={e=>setRyneTarget(e.target.value)}><option value="">انتخاب هدف</option>{activePlayers.filter(p=>p!==current).map(p=><option key={p}>{p}</option>)}</select></label><label className="army-select-label">حدس نقش دقیق<select value={ryneClaim} onChange={e=>setRyneClaim(e.target.value)}><option value="">انتخاب نقش</option>{Object.keys(TEAM).filter(r=>r!=="مشتری").map(r=><option key={r}>{r}</option>)}</select></label><button className="army-primary-button" disabled={currentRole!=="راینهارت"||!ryneTarget||!ryneClaim||assigned[ryneTarget]!==ryneClaim||TEAM[assigned[ryneTarget]]==="gestapo"} onClick={()=>{addLog("راینهارت با حدس دقیق نقش "+ryneClaim+"، "+ryneTarget+" را حذف کرد.");setKickTarget(ryneTarget);setKickReason("سایر موارد");setRyneTarget("");setRyneClaim("");}}>تأیید حذف با حدس نقش</button>
+ <div className="army-log"><h2>گزارش ترن جاری</h2>{logs.filter(x=>x.turn===turn).map((x,i)=><p key={i}>{i+1}. {x.text}</p>)}</div><button className="army-primary-button" onClick={finishTurn}>پایان ترن و ثبت سوابق</button><div className="army-log"><h2>ترن‌های قبلی</h2>{history.map(h=><article key={h.turn}><b>ترن {h.turn}</b>{h.entries.map((x,i)=><p key={i}>{x}</p>)}</article>)}</div>
+ <div className="army-stage-card"><h2>پایان بازی</h2><label className="army-select-label">تیم برنده<select value={winner} onChange={e=>setWinner(e.target.value)}><option value="">انتخاب تیم</option><option value="gestapo">گشتاپو</option><option value="partisan">پارتیزان‌ها</option></select></label><button className="army-primary-button" disabled={!winner} onClick={()=>{setEnded(true);addLog("پایان بازی؛ برنده: "+(winner==="gestapo"?"گشتاپو":"پارتیزان‌ها"));}}>ثبت پایان بازی</button></div>
+ </section>}
+ {room&&<div className="army-stage-card"><h2>اتاق گفت‌وگوی ویژه ۰۹۰۰</h2><p>میزبان: {room.host} ({assigned[room.host]})</p><p>میهمان: {room.guest} ({assigned[room.guest]})</p><p>زمان: {room.seconds} ثانیه</p><button className="army-primary-button" onClick={()=>setRoom(r=>r?({...r,running:!r.running}):r)}>{room.running?"توقف زمان":"شروع زمان ۶۰ ثانیه‌ای"}</button>
+ <label className="army-select-label">ساید اعلامی میهمان<select value={guestSide} onChange={e=>setGuestSide(e.target.value)}><option value="">انتخاب ساید</option><option value="partisan">پارتیزان</option><option value="gestapo">گشتاپو</option></select></label>
+ <label className="army-select-label">هویت اعلامی میهمان (برای خلبان/کسلر)<select value={guestClaim} onChange={e=>setGuestClaim(e.target.value)}>{["مشتری","خلبان","مأمور نجات","گشتاپو ساده","کرتیس","راینهارت","سرهنگ کسلر"].map(x=><option key={x}>{x}</option>)}</select></label>
+ <button className="army-primary-button" onClick={()=>{setRoom(r=>r?({...r,guestClaim,guestSide}):r);addLog("راوی هویت اعلامی میهمان را ثبت کرد: "+guestClaim);}}>ثبت هویت اعلامی</button>
+ <button className="army-primary-button" onClick={()=>{if(!room)return;const allowed=assigned[room.guest]==="خلبان"||assigned[room.guest]==="سرهنگ کسلر";if(!allowed&&guestSide!==TEAM[assigned[room.guest]]){addLog("راوی ساید اعلامی میهمان را رد کرد.");return;}setRoom(r=>r?({...r,guestClaim,guestSide}):r);addLog("راوی ساید اعلامی میهمان را تأیید کرد.");}}>تأیید ساید میهمان</button>
+ <button className="army-primary-button" onClick={startRoomTrade}>درخواست تبادل اسلحه</button>{room.trade&&<button className="army-primary-button" onClick={resolveTrade}>تأیید نتیجه معامله توسط راوی</button>}
+ <button className="army-primary-button" onClick={closeRoom}>تأیید راوی و بستن اتاق</button></div>}
+ {ended&&<div className="army-stage-card"><h2>بازی به پایان رسید</h2><p>برنده: {winner==="gestapo"?"گشتاپو":"پارتیزان‌ها"}</p></div>}
+ {saveError&&<p className="command-notice" role="alert">{saveError}</p>}
+ </div>;
 }
