@@ -370,3 +370,16 @@ body{font-family:"Vazirmatn","Noto Sans Arabic","Noto Naskh Arabic UI",Tahoma,sa
 .role-reveal-card .letter-warning{position:relative;z-index:1;color:#5d513a;font-size:8px;letter-spacing:.4px}
 .army-content .command-heading:after{content:"✥  ✉  ⚑";display:block;align-self:flex-start;margin-top:8px;padding:5px 9px;border:1px solid #786c4d;background:#1c241d;color:#c8b27a;font:13px Georgia,serif;letter-spacing:8px}
 @media(max-width:360px){.secret-envelope{min-height:205px;padding:15px}.role-reveal-card{padding:14px 10px}.faction-seal{width:92px;height:92px}}
+
+/* Custom engraved SVG iconography for the 1945 field console */
+.army-command-icon{width:19px;height:19px;flex:0 0 19px;display:inline-block;vertical-align:middle;color:currentColor}
+.army-action-tile{gap:6px}
+.army-action-tile>.army-command-icon{width:25px;height:25px;flex-basis:25px;filter:drop-shadow(0 1px 2px #0008)}
+.army-action-tile>span{font-size:9px;letter-spacing:.1px}
+.army-utility-bar button{display:flex;align-items:center;justify-content:center;gap:6px;min-width:0}
+.army-utility-bar .army-command-icon{width:16px;height:16px;flex-basis:16px;color:#c9b27a}
+.army-turn-counters{display:flex;align-items:center;justify-content:space-around;gap:8px;flex-wrap:wrap}
+.army-turn-counters>span{display:inline-flex;align-items:center;gap:5px}
+.army-turn-counters .army-command-icon{width:14px;height:14px;flex-basis:14px;color:#c5ad76}
+.army-stage-card h2>.army-command-icon,.army-overlay-panel h2>.army-command-icon{width:21px;height:21px;margin-left:5px;color:#c8b27a;vertical-align:-4px}
+@media(max-width:360px){.army-action-tile>.army-command-icon{width:22px;height:22px;flex-basis:22px}.army-utility-bar button{gap:4px}}
