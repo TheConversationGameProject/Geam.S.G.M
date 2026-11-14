@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 
 type RoleDetail = { team: string; description: string[] };
 type Props = { players: string[]; assigned: Record<string,string>; roleDetails: Record<string,RoleDetail>; onReturnToGames: () => void };
@@ -12,7 +12,7 @@ const TEAM:Record<string,string>={"کرتیس":"partisan","خلبان":"partisan
 const EMERGENCY_ROLES=["مشتری","مشتری","مأمور نجات","مأمور نجات"];
 const emptyGun=(role:string):Gun=>INITIAL_ARMED.includes(role)?"real":"none";
 function CommandIcon({name}:{name:"gun"|"room"|"challenge"|"remove"|"next"|"stats"|"history"|"end"|"supply"}){
- const paths:Record<string,React.ReactNode>={
+ const paths:Record<string,ReactNode>={
   gun:<><path d="M3 8h13l3 3-3 3H3z"/><path d="M16 8V5h3v6M6 14v3M9 14v2"/></>,
   room:<><path d="M3 4h18v13H9l-5 4v-4H3z"/><path d="M7 9h10M7 13h7"/></>,
   challenge:<><path d="M12 2 3 20h18z"/><path d="M12 8v5M12 16h.01"/></>,
