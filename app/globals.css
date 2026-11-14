@@ -332,8 +332,8 @@ body{font-family:"Vazirmatn","Noto Sans Arabic","Noto Naskh Arabic UI",Tahoma,sa
 
 /* 1945 intelligence-service envelopes and faction dispatch letters */
 .secret-envelope{position:relative;isolation:isolate;width:min(100%,340px);min-height:222px;margin:22px auto 18px;padding:18px 17px 15px;display:flex;flex-direction:column;align-items:stretch;justify-content:space-between;overflow:hidden;border:1px solid #b89b68;border-radius:3px;background:linear-gradient(145deg,#e2d3ad 0%,#c9b78d 48%,#a9956d 100%);color:#302a1d;text-align:left;box-shadow:0 18px 34px #0009,inset 0 0 0 5px #6f5a3822,inset 0 0 0 7px #e8dbb955;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease}
-.secret-envelope:before{content:"";position:absolute;inset:10px;z-index:-1;border:1px dashed #705d3c88;pointer-events:none}
-.secret-envelope:after{content:"";position:absolute;left:0;right:0;top:52px;height:120px;z-index:-1;background:linear-gradient(145deg,transparent 49.5%,#78674655 50%,transparent 50.6%),linear-gradient(215deg,transparent 49.5%,#78674655 50%,transparent 50.6%);pointer-events:none}
+.secret-envelope:before{content:"";position:absolute;inset:10px;z-index:0;border:1px dashed #705d3c88;pointer-events:none}
+.secret-envelope:after{content:"";position:absolute;left:0;right:0;top:52px;height:120px;z-index:0;background:linear-gradient(145deg,transparent 49.5%,#78674655 50%,transparent 50.6%),linear-gradient(215deg,transparent 49.5%,#78674655 50%,transparent 50.6%);pointer-events:none}
 .secret-envelope:active{transform:translateY(2px);box-shadow:0 10px 20px #0008,inset 0 0 0 5px #6f5a3822}
 .envelope-topline,.envelope-bottomline{display:flex;justify-content:space-between;gap:8px;color:#54472e;font:8px Georgia,serif;letter-spacing:1.4px}
 .envelope-topline{padding-bottom:9px;border-bottom:1px solid #77654466}
@@ -341,7 +341,8 @@ body{font-family:"Vazirmatn","Noto Sans Arabic","Noto Naskh Arabic UI",Tahoma,sa
 .envelope-address{display:grid;gap:5px;align-self:flex-start;margin:12px 0 22px;padding:7px 12px;border-right:2px solid #6e6144;background:#e9dfc4a6;min-width:65%}
 .envelope-address small{font-size:9px;color:#62563c}
 .envelope-address strong{font-size:18px;color:#2e2a20}
-.envelope-flap{position:absolute;left:0;right:0;top:62px;height:92px;z-index:-1;background:linear-gradient(135deg,#b9a47b,#d9c9a5);clip-path:polygon(0 0,100% 0,50% 100%);opacity:.65}
+.secret-envelope>*:not(.envelope-flap){position:relative;z-index:1}
+.envelope-flap{position:absolute;left:0;right:0;top:62px;height:92px;z-index:0;background:linear-gradient(135deg,#b9a47b,#d9c9a5);clip-path:polygon(0 0,100% 0,50% 100%);opacity:.65}
 .envelope-seal{position:absolute;right:calc(50% - 23px);top:112px;width:46px;height:46px;display:grid;place-items:center;border:2px solid #5c2927;border-radius:50%;background:radial-gradient(circle,#8e3d35,#5b2523);color:#e8d5a9;font:22px Georgia,serif;box-shadow:0 2px 6px #0005,inset 0 0 0 3px #e0c79b55}
 .envelope-bottomline{margin-top:auto;padding-top:8px;border-top:1px solid #77654466}
 .envelope-instruction{margin-top:13px;align-self:center;color:#4c422f;font-size:10px;font-weight:700}
