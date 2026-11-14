@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient as createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type Mode = "choice" | "login" | "register" | "search";
@@ -15,6 +16,7 @@ type Cafe = {
 type CafeLocation = { province: string; city: string };
 
 export default function HomePage() {
+  const router = useRouter();
   const [mode, setMode] = useState<Mode>("choice");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
@@ -93,7 +95,7 @@ export default function HomePage() {
         if (error) throw error;
         if (data.session) {
           redirecting = true;
-          window.location.assign("/cafe");
+          router.replace("/cafe");
           return;
         }
         setNotice("حساب ساخته شد اما نشست ورود دریافت نشد. تنظیم «تأیید ایمیل» در Supabase هنوز غیرفعال نشده است؛ تا اصلاح تنظیمات، ورود خودکار ممکن نیست.");
@@ -104,7 +106,7 @@ export default function HomePage() {
         });
         if (error) throw error;
         redirecting = true;
-        window.location.assign("/cafe");
+        router.replace("/cafe");
         return;
       }
     } catch (error) {
