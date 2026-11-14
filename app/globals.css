@@ -341,7 +341,7 @@ body{font-family:"Vazirmatn","Noto Sans Arabic","Noto Naskh Arabic UI",Tahoma,sa
 .envelope-address{display:grid;gap:5px;align-self:flex-start;margin:12px 0 22px;padding:7px 12px;border-right:2px solid #6e6144;background:#e9dfc4a6;min-width:65%}
 .envelope-address small{font-size:9px;color:#62563c}
 .envelope-address strong{font-size:18px;color:#2e2a20}
-.secret-envelope>*:not(.envelope-flap){position:relative;z-index:1}
+.secret-envelope>*:not(.envelope-flap):not(.envelope-seal){position:relative;z-index:1}.secret-envelope .envelope-seal{z-index:2}
 .envelope-flap{position:absolute;left:0;right:0;top:62px;height:92px;z-index:0;background:linear-gradient(135deg,#b9a47b,#d9c9a5);clip-path:polygon(0 0,100% 0,50% 100%);opacity:.65}
 .envelope-seal{position:absolute;right:calc(50% - 23px);top:112px;width:46px;height:46px;display:grid;place-items:center;border:2px solid #5c2927;border-radius:50%;background:radial-gradient(circle,#8e3d35,#5b2523);color:#e8d5a9;font:22px Georgia,serif;box-shadow:0 2px 6px #0005,inset 0 0 0 3px #e0c79b55}
 .envelope-bottomline{margin-top:auto;padding-top:8px;border-top:1px solid #77654466}
