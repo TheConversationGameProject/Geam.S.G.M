@@ -4,8 +4,8 @@ import CafeWorkspace from "./cafe-workspace";
 
 export default async function CafePage() {
   const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/");
+  const { data: { claims }, error: claimsError } = await supabase.auth.getClaims();
+  if (claimsError || !claims?.sub) redirect("/");
 
   const { data: gifted, error: giftError } = await supabase.rpc("claim_first_login_trial");
   const { data: accessData } = await supabase.rpc("get_my_access_status").maybeSingle();
