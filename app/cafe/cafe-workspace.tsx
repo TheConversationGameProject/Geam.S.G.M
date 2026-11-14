@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import ArmyGameFlow from "./army-game-flow";
+import SignOutForm from "@/app/auth/signout-form";
 
 type View = "welcome" | "menu" | "games" | "army-setup" | "army-deal" | "army-flow";
 const ARMY_ROLES = ["کرتیس","خلبان","مأمور نجات","مأمور نجات","دکتر پاسگال","سرهنگ کسلر","راینهارت","گشتاپو ساده","مشتری","مشتری"];
@@ -98,7 +99,7 @@ export default function CafeWorkspace({ gifted }: { gifted: boolean }) {
             <p className="dispatch-copy">{gifted ? "پرونده کافه فعال شد. یک ماه اشتراک هدیه برای کافه‌ات ثبت شده است." : "دسترسی کافه تأیید شد. میز فرماندهی آماده دریافت دستورهای توست."}</p>
             <div className="dispatch-actions">
               <button className="dispatch-enter" onClick={() => { setNotice(""); setView("menu"); }}>ورود به میز فرماندهی <span>←</span></button>
-              <form action="/auth/signout" method="post"><button className="dispatch-logout">خروج از حساب</button></form>
+              <SignOutForm className="dispatch-logout" />
             </div>
             <div className="dispatch-footnote"><span>KEEP THIS CHANNEL CLEAR</span><span>BRUSSELS · 50°50' N</span></div>
           </section>
