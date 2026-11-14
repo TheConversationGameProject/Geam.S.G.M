@@ -32,7 +32,6 @@ export default function CafeWorkspace({ gifted }: { gifted: boolean }) {
   const [players, setPlayers] = useState<string[]>(Array(10).fill(""));
   const [roleDeck, setRoleDeck] = useState<string[]>([]);
   const [assigned, setAssigned] = useState<Record<string, string>>({});
-  const [spinning, setSpinning] = useState(false);
   const [revealedRole, setRevealedRole] = useState("");
   const [revealedPlayer, setRevealedPlayer] = useState("");
   function openSection(label: string) {
@@ -59,17 +58,13 @@ export default function CafeWorkspace({ gifted }: { gifted: boolean }) {
   }
 
   function revealNextRole() {
-    const currentPlayer = players[Object.keys(assigned).length];
-    if (!currentPlayer || spinning || revealedRole) return;
-    const role = roleDeck[Object.keys(assigned).length];
-    if (!role) return;
-    setSpinning(true);
-    window.setTimeout(() => {
-      setAssigned((previous) => ({ ...previous, [currentPlayer]: role }));
-      setRevealedRole(role);
-      setRevealedPlayer(currentPlayer);
-      setSpinning(false);
-    }, 2300);
+    const index = Object.keys(assigned).length;
+    const currentPlayer = players[index];
+    const role = roleDeck[index];
+    if (!currentPlayer || !role || revealedRole) return;
+    setAssigned((previous) => ({ ...previous, [currentPlayer]: role }));
+    setRevealedRole(role);
+    setRevealedPlayer(currentPlayer);
   }
 
   function continueAfterRole() {
@@ -150,22 +145,28 @@ export default function CafeWorkspace({ gifted }: { gifted: boolean }) {
             <div className="army-progress" aria-label={dealtCount + " از ۱۰ نقش تقسیم شده"}><span style={{ width: (dealtCount * 10) + "%" }} /></div>
             <p className="army-hint">گوشی را به بازیکنِ نوبت‌دار بده. نام او روی کارت دیده می‌شود؛ بازیکن برای دیدن نقش خودش روی کارت می‌زند.</p>
             {!revealedRole ? (
-              <button type="button" className={"role-card role-card-private " + (spinning ? "role-card-spinning" : "")} onClick={revealNextRole} disabled={spinning}>
-                <span className="role-card-stamp">CANDIDA · 1945</span>
-                <span className="role-card-label">{currentPlayer}</span>
-                <strong>{spinning ? "✦" : "؟"}</strong>
-                <small>{spinning ? "در حال باز شدن..." : "برای مشاهده نقش لمس کن"}</small>
+              <button type="button" className="secret-envelope" onClick={revealNextRole} aria-label={"باز کردن نامه محرمانه برای " + currentPlayer}>
+                <span className="envelope-topline"><b>FELDPOST</b><span>1945 · BRUSSELS</span></span>
+                <span className="envelope-address"><small>محرمانه ـ فقط برای</small><strong>{currentPlayer}</strong></span>
+                <span className="envelope-flap" aria-hidden="true" />
+                <span className="envelope-seal" aria-hidden="true">C</span>
+                <span className="envelope-bottomline">GEHEIM · EYES ONLY</span>
+                <span className="envelope-instruction">✉ برای گشودن نامه لمس کن</span>
               </button>
             ) : (
               <div className="role-reveal-panel">
-                <p>این کارت متعلق به</p><h2>{revealedPlayer}</h2>
-                <div className={"role-reveal-card role-team-" + ROLE_DETAILS[revealedRole].team}>
-                  <small>SECRET ROLE · CLASSIFIED</small>
+                <p className="letter-recipient">نامه محرمانه خطاب به</p><h2>{revealedPlayer}</h2>
+                <article className={"role-reveal-card role-team-" + ROLE_DETAILS[revealedRole].team}>
+                  <div className="letter-classification"><span>GEHEIME NACHRICHT</span><span>NO. {String(dealtCount).padStart(2,"0")} / 10</span></div>
+                  <div className="faction-seal" data-faction={ROLE_DETAILS[revealedRole].team} aria-label={ROLE_DETAILS[revealedRole].team==="gestapo"?"نشان تاریخی آلمان نازی":ROLE_DETAILS[revealedRole].team==="partisan"?"نشان ارتش بریتانیا":"نشان بلژیک"}>
+                    {ROLE_DETAILS[revealedRole].team==="gestapo" ? <><span className="seal-eagle">✥</span><b>DEUTSCHES REICH</b><small>1945</small></> : ROLE_DETAILS[revealedRole].team==="partisan" ? <><span className="seal-shield">✚</span><b>BRITISH FORCES</b><small>1945</small></> : <><span className="seal-lion">♌</span><b>BELGIQUE</b><small>1945</small></>}
+                  </div>
+                  <small className="letter-role-label">پرونده هویت و مأموریت</small>
                   <strong>{revealedRole}</strong>
                   <div className="role-description">{ROLE_DETAILS[revealedRole].description.map((line, index) => <p key={index}>{line}</p>)}</div>
-                  <span>پس از خواندن نقش، دکمه «فهمیدم» را بزن.</span>
-                </div>
-                <button className="army-primary-button" onClick={continueAfterRole}>فهمیدم <span>←</span></button>
+                  <span className="letter-warning">پس از مطالعه، نامه را محرمانه نگه دار.</span>
+                </article>
+                <button className="army-primary-button" onClick={continueAfterRole}>نامه را خواندم <span>←</span></button>
               </div>
             )}
             <div className="army-deal-footer"><span>نقش‌های تقسیم‌شده: {dealtCount} / ۱۰</span><span>نقش‌ها تصادفی و بدون جایگزینی اضافه</span></div>
