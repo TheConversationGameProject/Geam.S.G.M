@@ -361,20 +361,11 @@ body{font-family:"Vazirmatn","Noto Sans Arabic","Noto Naskh Arabic UI",Tahoma,sa
 .faction-seal[data-faction="customer"]{border-color:#98712f;color:#59431d;background:radial-gradient(circle,#f0e1b8,#c7aa6e)}
 .faction-seal>b{font:7px Georgia,serif;letter-spacing:1px}
 .faction-seal>small{font:7px Georgia,serif;letter-spacing:1.5px}
-.seal-eagle,.seal-shield,.seal-lion{font:42px Georgia,serif;line-height:1}
-.seal-eagle{color:#762f31;text-shadow:1px 1px #e8ddc5}
-.seal-shield{color:#4e6545}
-.seal-lion{color:#98712f}
+.faction-seal svg{width:76px;height:65px;display:block;overflow:visible}
 .letter-role-label{position:relative;z-index:1;color:#65563b!important;font:8px Georgia,serif!important;letter-spacing:1.3px}
 .role-reveal-card>strong{position:relative;z-index:1;color:#29271f;font-size:24px;text-shadow:0 1px #fff5}
 .role-reveal-card .role-description{position:relative;z-index:1;width:100%;padding:10px 8px;border-top:1px solid #796b4d66;border-bottom:1px solid #796b4d66}
 .role-reveal-card .role-description p{margin:4px 0;color:#373328;font-size:11px;line-height:1.9}
 .role-reveal-card .letter-warning{position:relative;z-index:1;color:#5d513a;font-size:8px;letter-spacing:.4px}
 .army-content .command-heading:after{content:"✥  ✉  ⚑";display:block;align-self:flex-start;margin-top:8px;padding:5px 9px;border:1px solid #786c4d;background:#1c241d;color:#c8b27a;font:13px Georgia,serif;letter-spacing:8px}
-.army-action-tile{position:relative}
-.army-action-tile:first-child:before{content:"⚔"}
-.army-action-tile:nth-child(2):before{content:"✉"}
-.army-action-tile:nth-child(3):before{content:"⚑"}
-.army-action-tile:nth-child(4):before{content:"⊗"}
-.army-action-tile:nth-child(5):before{content:"➜"}
 @media(max-width:360px){.secret-envelope{min-height:205px;padding:15px}.role-reveal-card{padding:14px 10px}.faction-seal{width:92px;height:92px}}
