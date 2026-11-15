@@ -388,3 +388,8 @@ body{font-family:"Vazirmatn","Noto Sans Arabic","Noto Naskh Arabic UI",Tahoma,sa
 /* The subscription menu tile acts as one unified, non-selectable control. */
 .menu-tile-subscription{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:pointer}
 .menu-tile-subscription>*{pointer-events:none;user-select:none;-webkit-user-select:none}
+
+
+/* Subscription tile: the whole card is the link; its copy is never underlined or selectable. */
+.menu-tile-subscription,.menu-tile-subscription:visited,.menu-tile-subscription:hover,.menu-tile-subscription:active{text-decoration:none!important;color:inherit}
+.menu-tile-subscription *{text-decoration:none!important;-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none}
