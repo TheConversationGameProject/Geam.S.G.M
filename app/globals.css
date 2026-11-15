@@ -383,3 +383,8 @@ body{font-family:"Vazirmatn","Noto Sans Arabic","Noto Naskh Arabic UI",Tahoma,sa
 .army-turn-counters .army-command-icon{width:14px;height:14px;flex-basis:14px;color:#c5ad76}
 .army-stage-card h2>.army-command-icon,.army-overlay-panel h2>.army-command-icon{width:21px;height:21px;margin-left:5px;color:#c8b27a;vertical-align:-4px}
 @media(max-width:360px){.army-action-tile>.army-command-icon{width:22px;height:22px;flex-basis:22px}.army-utility-bar button{gap:4px}}
+
+
+/* The subscription menu tile acts as one unified, non-selectable control. */
+.menu-tile-subscription{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:pointer}
+.menu-tile-subscription>*{pointer-events:none;user-select:none;-webkit-user-select:none}
