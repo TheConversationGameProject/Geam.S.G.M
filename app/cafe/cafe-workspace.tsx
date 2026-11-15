@@ -102,7 +102,8 @@ export default function CafeWorkspace({ gifted, trialEndsAt }: { gifted: boolean
         {view === "menu" && (
           <section className="command-content">
             <div className="command-heading"><div><p className="dispatch-overline">کانال فرماندهی / ۰۱</p><h1>میز <em>فرماندهی</em></h1><p>دستور بعدی را انتخاب کن.</p></div><div className="command-crest">C<span>HQ</span></div></div>
-            <div className="command-notice" role="status">{trialEndsAt && new Date(trialEndsAt).getTime() > Date.now() ? "اشتراک آزمایشی تا " + new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(trialEndsAt)) + " معتبر است." : "دوره آزمایشی پایان یافته است؛ وضعیت دسترسی از سمت سرور بررسی می‌شود."}</div>\n            <div className="menu-board">
+            <div className="command-notice" role="status">{trialEndsAt && new Date(trialEndsAt).getTime() > Date.now() ? "اشتراک آزمایشی تا " + new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(trialEndsAt)) + " معتبر است." : "دوره آزمایشی پایان یافته است؛ وضعیت دسترسی از سمت سرور بررسی می‌شود."}</div>
+            <div className="menu-board">
               <button className="menu-tile menu-tile-main" onClick={() => { setNotice(""); setView("games"); }}><span className="tile-index">۰۱ / FIELD</span><strong>شروع بازی</strong><small>انتخاب عملیات و آماده‌سازی میز</small><b className="tile-arrow">←</b></button>
               <a className="menu-tile menu-tile-subscription" href="/cafe/subscription"><span className="tile-index">۰۲ / SUPPLY</span><strong>خرید اشتراک</strong><small>تدارکات و تمدید دسترسی</small><b className="tile-arrow">←</b></a>
               <button className="menu-tile" onClick={() => openSection("درخواست پشتیبانی و سوال")}><span className="tile-index">۰۳ / SIGNAL</span><strong>درخواست پشتیبانی و سوال</strong><small>ارسال پیام به مرکز ارتباطات</small><b className="tile-arrow">←</b></button>
