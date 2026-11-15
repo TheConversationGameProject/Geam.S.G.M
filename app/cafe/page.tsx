@@ -4,8 +4,7 @@ import SignOutForm from "@/app/auth/signout-form";
 
 export default async function CafePage() {
   const supabase = await createSupabaseServerClient();
-  const { data: gifted, error: giftError } = await supabase.rpc("claim_first_login_trial");
-  const { data: accessData } = await supabase.rpc("get_my_access_status").maybeSingle();
+  const { data: accessData, error: accessError } = await supabase.rpc("get_my_access_status").maybeSingle();
   const access = accessData as {
     role?: string;
     trial_started_at?: string | null;
@@ -13,7 +12,7 @@ export default async function CafePage() {
     has_access?: boolean;
   } | null;
 
-  if (giftError) {
+  if (accessError) {
     return (
       <main className="welcome-screen">
         <section className="access-locked">
@@ -33,12 +32,13 @@ export default async function CafePage() {
         <section className="access-locked">
           <div className="welcome-seal">C</div>
           <h1>دسترسی راوی غیرفعال است</h1>
-          <p>هدیه یک‌ماهه قبلاً استفاده شده یا شرایط دریافت آن برقرار نیست. برای ادامه فعالیت، اشتراک فعال لازم است.</p>
+          <p>مهلت آزمایشی به پایان رسیده یا شرایط دریافت آن برقرار نیست. برای ادامه فعالیت، اشتراک فعال لازم است.</p>
+          <a className="quiet-button" href="/cafe/subscription">مشاهده و خرید اشتراک</a>
           <SignOutForm className="quiet-button" />
         </section>
       </main>
     );
   }
 
-  return <CafeWorkspace gifted={Boolean(gifted)} />;
+  return <CafeWorkspace gifted={Boolean(access.trial_started_at)} trialEndsAt={access.trial_ends_at ?? null} />;
 }
