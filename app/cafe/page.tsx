@@ -40,5 +40,5 @@ export default async function CafePage() {
     );
   }
 
-  return <CafeWorkspace gifted={Boolean(access.trial_started_at)} trialEndsAt={access.trial_ends_at ?? null} />;
+  return <CafeWorkspace gifted={Boolean(access.trial_ends_at && new Date(access.trial_ends_at).getTime() > Date.now())} trialEndsAt={access.trial_ends_at ?? null} />;
 }
