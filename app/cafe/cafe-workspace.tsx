@@ -26,7 +26,7 @@ function shuffle<T,>(items: T[]): T[] {
   return result;
 }
 
-export default function CafeWorkspace({ gifted }: { gifted: boolean }) {
+export default function CafeWorkspace({ gifted, trialEndsAt }: { gifted: boolean; trialEndsAt: string | null }) {
   const [view, setView] = useState<View>("welcome");
   const [notice, setNotice] = useState("");
   const [players, setPlayers] = useState<string[]>(Array(10).fill(""));
@@ -102,9 +102,9 @@ export default function CafeWorkspace({ gifted }: { gifted: boolean }) {
         {view === "menu" && (
           <section className="command-content">
             <div className="command-heading"><div><p className="dispatch-overline">کانال فرماندهی / ۰۱</p><h1>میز <em>فرماندهی</em></h1><p>دستور بعدی را انتخاب کن.</p></div><div className="command-crest">C<span>HQ</span></div></div>
-            <div className="menu-board">
+            <div className="command-notice" role="status">{trialEndsAt && new Date(trialEndsAt).getTime() > Date.now() ? "اشتراک آزمایشی تا " + new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(trialEndsAt)) + " معتبر است." : "دوره آزمایشی پایان یافته است؛ وضعیت دسترسی از سمت سرور بررسی می‌شود."}</div>\n            <div className="menu-board">
               <button className="menu-tile menu-tile-main" onClick={() => { setNotice(""); setView("games"); }}><span className="tile-index">۰۱ / FIELD</span><strong>شروع بازی</strong><small>انتخاب عملیات و آماده‌سازی میز</small><b className="tile-arrow">←</b></button>
-              <button className="menu-tile" onClick={() => openSection("خرید اشتراک")}><span className="tile-index">۰۲ / SUPPLY</span><strong>خرید اشتراک</strong><small>تدارکات و تمدید دسترسی</small><b className="tile-arrow">←</b></button>
+              <a className="menu-tile" href="/cafe/subscription"><span className="tile-index">۰۲ / SUPPLY</span><strong>خرید اشتراک</strong><small>تدارکات و تمدید دسترسی</small><b className="tile-arrow">←</b></a>
               <button className="menu-tile" onClick={() => openSection("درخواست پشتیبانی و سوال")}><span className="tile-index">۰۳ / SIGNAL</span><strong>درخواست پشتیبانی و سوال</strong><small>ارسال پیام به مرکز ارتباطات</small><b className="tile-arrow">←</b></button>
               <button className="menu-tile" onClick={() => openSection("ثبت شخصیت جدید برای بازی مافیا")}><span className="tile-index">۰۴ / PERSONNEL</span><strong>ثبت شخصیت جدید برای بازی مافیا</strong><small>افزودن پرونده شخصیت به بایگانی</small><b className="tile-arrow">←</b></button>
             </div>
